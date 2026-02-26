@@ -16,8 +16,14 @@ function SignUp() {
   const usernameValid = username.trim() !== "";
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const passwordValid = password.length >= 6;
-  const skillLevelValid = ["beginner", "intermediate", "advanced", "expert"].includes(skillLevel);
-  const isFormValid = usernameValid && emailValid && passwordValid && skillLevelValid;
+  const skillLevelValid = [
+    "beginner",
+    "intermediate",
+    "advanced",
+    "expert",
+  ].includes(skillLevel);
+  const isFormValid =
+    usernameValid && emailValid && passwordValid && skillLevelValid;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -31,18 +37,21 @@ function SignUp() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080"}/api/users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080"}/api/users`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: username.trim(),
+            email: email.trim(),
+            password,
+            skillLevel: skillLevel.toUpperCase(),
+          }),
         },
-        body: JSON.stringify({
-          username: username.trim(),
-          email: email.trim(),
-          password,
-          skillLevel: skillLevel.toUpperCase(),
-        }),
-      });
+      );
 
       if (response.status === 201) {
         setSuccessMessage("Signup successful! You can now log in.");
@@ -50,13 +59,17 @@ function SignUp() {
       }
 
       if (response.status === 409) {
-        setErrorMessage("That username already exists. Please choose another one.");
+        setErrorMessage(
+          "That username already exists. Please choose another one.",
+        );
         return;
       }
 
       setErrorMessage("Signup failed. Please try again.");
     } catch (error) {
-      setErrorMessage("Cannot reach the server. Check that your backend is running.");
+      setErrorMessage(
+        "Cannot reach the server. Check that your backend is running.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -114,10 +127,39 @@ function SignUp() {
         </select>
         <br />
         {errorMessage && <p>{errorMessage}</p>}
-        {successMessage && <p>{successMessage}</p>}
-        <button className="submit" type="submit" disabled={!isFormValid || isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Submit"}
-        </button>
+        <br />
+        {successMessage && (
+          <button
+            className="submit"
+            type="button"
+            onClick={() => navigate("/login")}
+          >
+            Go to Login
+          </button>
+        )}
+        <br />
+
+        {!successMessage && (
+          <button
+            className="submit"
+            type="submit"
+            disabled={!isFormValid || isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Submit"}
+          </button>
+        )}
+        {successMessage || (
+          <p>
+            Already have an account?{" "}
+            <button
+              className="link-button"
+              type="button"
+              onClick={() => navigate("/login")}
+            >
+              Log in here
+            </button>
+          </p>
+        )}
       </form>
       <img
         className="signup-image"
