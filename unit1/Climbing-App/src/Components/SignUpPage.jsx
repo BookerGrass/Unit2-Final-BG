@@ -12,6 +12,7 @@ function SignUp() {
   const [skillLevel, setSkillLevel] = useState("beginner");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const usernameValid = username.trim() !== "";
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const passwordValid = password.length >= 6;
@@ -26,6 +27,7 @@ function SignUp() {
     }
 
     setErrorMessage("");
+    setSuccessMessage("");
     setIsSubmitting(true);
 
     try {
@@ -43,7 +45,7 @@ function SignUp() {
       });
 
       if (response.status === 201) {
-        navigate("/create");
+        setSuccessMessage("Signup successful! You can now log in.");
         return;
       }
 
@@ -112,6 +114,7 @@ function SignUp() {
         </select>
         <br />
         {errorMessage && <p>{errorMessage}</p>}
+        {successMessage && <p>{successMessage}</p>}
         <button className="submit" type="submit" disabled={!isFormValid || isSubmitting}>
           {isSubmitting ? "Submitting..." : "Submit"}
         </button>
