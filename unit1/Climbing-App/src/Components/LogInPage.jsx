@@ -14,12 +14,16 @@ function LogIn() {
   const passwordValid = password.length >= 6;
   const isFormValid = emailValid && passwordValid;
 
-
-return (
-  <div>
-    <Navbar />
-  </div>
-);
+  return (
+    <div>
+      <Navbar />
+      <main className="flex-item">
+        <h1 className="title">Login</h1>
+        <p>login page coming soon.</p>
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
 export default LogIn;

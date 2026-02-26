@@ -36,6 +36,11 @@ function NavBar() {
               </Link>
             </li>
             <li>
+              <Link to="/login" onClick={() => setIsOpen(false)}>
+                Log In
+              </Link>
+            </li>
+            <li>
               <Link to="/create" onClick={() => setIsOpen(false)}>
                 Create Buddy
               </Link>
@@ -43,6 +48,15 @@ function NavBar() {
             <li>
               <Link to="/about" onClick={() => setIsOpen(false)}>
                 About Us
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/settings"
+                className="settings-link"
+                aria-label="Settings"
+              >
+                ⚙️
               </Link>
             </li>
           </ul>
