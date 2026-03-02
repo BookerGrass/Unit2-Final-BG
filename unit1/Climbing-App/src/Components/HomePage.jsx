@@ -10,6 +10,8 @@ function getRandomStringFromArray(arr) {
 }
 
 function HomePage() {
+  const loggedInUsername = localStorage.getItem("loggedInUsername");
+
   const quotes = [
     "Go You",
     "Have a low gravity day",
@@ -76,7 +78,10 @@ function HomePage() {
           alt="climbing gym"
         />
         <div className="centered">
-          <h1>Welcome Back</h1>
+          <h1>
+            Welcome Back
+            {loggedInUsername ? `, ${loggedInUsername}` : ""}!
+          </h1>
         </div>
       </div>
       <div className="flex-container">

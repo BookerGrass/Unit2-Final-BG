@@ -46,6 +46,10 @@ function LoginPage() {
       const user = await response.json();
 
       if (user.password === password) {
+        localStorage.setItem(
+          "loggedInUsername",
+          user.username ?? username.trim(),
+        );
         setSuccessMessage("Login successful.");
         return;
       }
@@ -97,9 +101,9 @@ function LoginPage() {
           <button
             className="submit"
             type="button"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/home")}
           >
-            Go to Home
+            Go to Home Page!
           </button>
         )}
 
