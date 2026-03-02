@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Navbar from "./NavBar";
 import Footer from "./Footer";
 import "./Main.css";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 
 function getRandomStringFromArray(arr) {
@@ -11,6 +11,7 @@ function getRandomStringFromArray(arr) {
 
 function HomePage() {
   const loggedInUsername = localStorage.getItem("loggedInUsername");
+  const navigate = useNavigate();
 
   const quotes = [
     "Go You",
@@ -66,6 +67,12 @@ function HomePage() {
       setCounts(newCounts);
     }
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem("loggedInUsername");
+    navigate("/login");
+  };
+
   const location = useLocation();
   const image = location.state?.image;
 
@@ -82,6 +89,11 @@ function HomePage() {
             Welcome Back
             {loggedInUsername ? `, ${loggedInUsername}` : ""}!
           </h1>
+          {loggedInUsername && (
+            <button className="submit" type="button" onClick={handleLogout}>
+              Log Out
+            </button>
+          )}
         </div>
       </div>
       <div className="flex-container">
