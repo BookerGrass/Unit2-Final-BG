@@ -31,11 +31,20 @@ function SettingsPage() {
         <main className="flex-item">
           <h1 className="title">Settings</h1>
           <p>You need to be logged in to view this page.</p>
-          <Link to="/login">
-            <button className="submit" type="button">
-              Go to Login
-            </button>
-          </Link>
+          <button
+            className="submit"
+            type="button"
+            onClick={() => navigate("/login")}
+          >
+            Go to Login
+          </button>
+          <button
+            className="submit"
+            type="button"
+            onClick={() => navigate("/signup")}
+          >
+            Go to Signup
+          </button>
         </main>
         <Footer />
       </div>

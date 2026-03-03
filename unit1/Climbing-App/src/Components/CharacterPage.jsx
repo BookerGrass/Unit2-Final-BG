@@ -18,7 +18,7 @@ function CreateBuddy() {
   const [selectedImage, setSelectedImage] = useState("cat");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
+  const loggedInUsername = localStorage.getItem("loggedInUsername");
   const navigate = useNavigate();
 
   const imageOptions = {
@@ -27,6 +27,33 @@ function CreateBuddy() {
     lizard:
       "https://images.pexels.com/photos/17020788/pexels-photo-17020788/free-photo-of-a-lizard-climbing-on-the-rock.jpeg",
   };
+
+  if (!loggedInUsername) {
+    return (
+      <div>
+        <Navbar />
+        <main className="flex-item">
+          <h1 className="title">Create Your Buddy</h1>
+          <p>You need to be logged in to view this page.</p>
+          <button
+            className="submit"
+            type="button"
+            onClick={() => navigate("/login")}
+          >
+            Go to Login
+          </button>
+          <button
+            className="submit"
+            type="button"
+            onClick={() => navigate("/signup")}
+          >
+            Go to Signup
+          </button>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   const handleChange = (e) => {
     triggerConfetti();
