@@ -13,6 +13,33 @@ function HomePage() {
   const loggedInUsername = localStorage.getItem("loggedInUsername");
   const navigate = useNavigate();
 
+  if (!loggedInUsername) {
+    return (
+      <div>
+        <Navbar />
+        <main className="flex-item">
+          <h1 className="title">Home</h1>
+          <p>You need to be logged in to view this page.</p>
+          <button
+            className="submit"
+            type="button"
+            onClick={() => navigate("/login")}
+          >
+            Go to Login
+          </button>
+          <button
+            className="submit"
+            type="button"
+            onClick={() => navigate("/signup")}
+          >
+            Go to Signup
+          </button>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   const quotes = [
     "Go You",
     "Have a low gravity day",
