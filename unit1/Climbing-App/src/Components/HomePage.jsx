@@ -82,6 +82,7 @@ function HomePage() {
     "Try a climb outside of your normal tag range",
     "Stretch before climbing",
   ]);
+  const [newTask, setNewTask] = useState("");
 
   const [counts, setCounts] = useState([0, 0, 0]);
 
@@ -119,6 +120,20 @@ function HomePage() {
 
       setCounts(newCounts);
     }
+  };
+
+  const handleAddTask = (event) => {
+    event.preventDefault();
+
+    const trimmedTask = newTask.trim();
+
+    if (!trimmedTask) {
+      return;
+    }
+
+    setInProgressTasks((prev) => [...prev, trimmedTask]);
+    setCounts((prev) => [...prev, 0]);
+    setNewTask("");
   };
 
   const handleLogout = () => {
@@ -186,6 +201,7 @@ function HomePage() {
       <div className="flex-container">
         <div className="flex-item">
           <h2>In Progress</h2>
+
           <ol>
             {inProgressTasks.length === 0 ? (
               <p>All tasks completed!</p>
@@ -203,6 +219,17 @@ function HomePage() {
               ))
             )}
           </ol>
+          <form onSubmit={handleAddTask}>
+            <label htmlFor="newTask">Add a task: </label>
+            <input
+              type="text"
+              id="newTask"
+              name="newTask"
+              value={newTask}
+              onChange={(event) => setNewTask(event.target.value)}
+            />
+            <button type="submit">Add Task</button>
+          </form>
         </div>
         <div className="flex-item">
           <h2>Achievements</h2>
