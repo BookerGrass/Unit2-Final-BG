@@ -74,7 +74,6 @@ public class UserController {
 
         User user = userOptional.get();
 
-        // Update username only if it's different and doesn't already exist
         if (userDetails.getUsername() != null && !userDetails.getUsername().equals(username)) {
             if (userRepository.existsByUsername(userDetails.getUsername())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -82,17 +81,14 @@ public class UserController {
             user.setUsername(userDetails.getUsername());
         }
 
-        // Update password if provided
         if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
             user.setPassword(userDetails.getPassword());
         }
 
-        // Update email if provided
         if (userDetails.getEmail() != null && !userDetails.getEmail().isEmpty()) {
             user.setEmail(userDetails.getEmail());
         }
 
-        // Update skill level if provided
         if (userDetails.getSkillLevel() != null) {
             user.setSkillLevel(userDetails.getSkillLevel());
         }

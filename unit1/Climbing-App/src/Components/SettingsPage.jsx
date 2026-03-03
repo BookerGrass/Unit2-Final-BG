@@ -5,15 +5,18 @@ import Footer from "./Footer";
 import "./Main.css";
 
 function SettingsPage() {
-  const loggedInUsername = localStorage.getItem("loggedInUsername");
-  const [newUsername, setNewUsername] = useState(loggedInUsername ?? "");
+  const storedUsername = localStorage.getItem("loggedInUsername");
+  const [currentUsername, setCurrentUsername] = useState(storedUsername ?? "");
+  const [selectedDetail, setSelectedDetail] = useState("username");
+  const [newUsername, setNewUsername] = useState(storedUsername ?? "");
+  const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!loggedInUsername) {
+  if (!storedUsername) {
     return (
       <div>
         <Navbar />
@@ -31,12 +34,11 @@ function SettingsPage() {
     );
   }
 
-  const updateUser = async (baseUrl, body) => {
+  const updateUser = async (baseUrl, usernameToUpdate, body) => {
     const endpoints = [
-      `${baseUrl}/api/users/username/${encodeURIComponent(loggedInUsername)}`,
-      `${baseUrl}/api/users/${encodeURIComponent(loggedInUsername)}`,
+      `${baseUrl}/api/users/username/${encodeURIComponent(usernameToUpdate)}`,
+      `${baseUrl}/api/users/${encodeURIComponent(usernameToUpdate)}`,
     ];
-
     const methods = ["PUT", "PATCH"];
 
     for (const endpoint of endpoints) {
@@ -82,37 +84,56 @@ function SettingsPage() {
     setErrorMessage("");
     setSuccessMessage("");
 
-    const trimmedUsername = newUsername.trim();
-    const wantsUsernameChange = trimmedUsername !== loggedInUsername;
-    const wantsPasswordChange = newPassword.trim() !== "";
-
-    if (!wantsUsernameChange && !wantsPasswordChange) {
-      setErrorMessage("Make a change before saving your account settings.");
-      return;
-    }
-
-    if (trimmedUsername === "") {
-      setErrorMessage("Username cannot be blank.");
-      return;
-    }
-
-    if (wantsPasswordChange && newPassword.length < 6) {
-      setErrorMessage("Password must be at least 6 characters.");
-      return;
-    }
-
-    if (wantsPasswordChange && newPassword !== confirmPassword) {
-      setErrorMessage("Password confirmation does not match.");
-      return;
-    }
-
     const body = {};
 
-    if (wantsUsernameChange) {
+    if (selectedDetail === "username") {
+      const trimmedUsername = newUsername.trim();
+
+      if (trimmedUsername === "") {
+        setErrorMessage("Username cannot be blank.");
+        return;
+      }
+
+      if (trimmedUsername === currentUsername) {
+        setErrorMessage("Please enter a different username.");
+        return;
+      }
+
       body.username = trimmedUsername;
     }
 
-    if (wantsPasswordChange) {
+    if (selectedDetail === "email") {
+      const trimmedEmail = newEmail.trim();
+
+      if (trimmedEmail === "") {
+        setErrorMessage("Email cannot be blank.");
+        return;
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+        setErrorMessage("Please enter a valid email address.");
+        return;
+      }
+
+      body.email = trimmedEmail;
+    }
+
+    if (selectedDetail === "password") {
+      if (newPassword.trim() === "") {
+        setErrorMessage("Password cannot be blank.");
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        setErrorMessage("Password must be at least 6 characters.");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        setErrorMessage("Password confirmation does not match.");
+        return;
+      }
+
       body.password = newPassword;
     }
 
@@ -121,7 +142,7 @@ function SettingsPage() {
 
     setIsSubmitting(true);
 
-    const result = await updateUser(baseUrl, body);
+    const result = await updateUser(baseUrl, currentUsername, body);
 
     if (!result.ok) {
       setErrorMessage(result.message);
@@ -129,13 +150,24 @@ function SettingsPage() {
       return;
     }
 
-    if (wantsUsernameChange) {
+    if (selectedDetail === "username") {
+      const trimmedUsername = newUsername.trim();
       localStorage.setItem("loggedInUsername", trimmedUsername);
+      setCurrentUsername(trimmedUsername);
+      setSuccessMessage("Username updated successfully.");
     }
 
-    setSuccessMessage("Account updated successfully.");
-    setNewPassword("");
-    setConfirmPassword("");
+    if (selectedDetail === "email") {
+      setNewEmail("");
+      setSuccessMessage("Email updated successfully.");
+    }
+
+    if (selectedDetail === "password") {
+      setNewPassword("");
+      setConfirmPassword("");
+      setSuccessMessage("Password updated successfully.");
+    }
+
     setIsSubmitting(false);
   };
 
@@ -145,43 +177,84 @@ function SettingsPage() {
       <main className="flex-item">
         <h1 className="title">Settings</h1>
         <form onSubmit={handleSubmit}>
-          <label htmlFor="newUsername">Username: </label>
-          <input
-            type="text"
-            id="newUsername"
-            name="newUsername"
-            value={newUsername}
-            onChange={(event) => setNewUsername(event.target.value)}
-            required
-          />
+          <label htmlFor="detailToChange">Choose detail to change: </label>
+          <select
+            id="detailToChange"
+            name="detailToChange"
+            value={selectedDetail}
+            onChange={(event) => {
+              setSelectedDetail(event.target.value);
+              setErrorMessage("");
+              setSuccessMessage("");
+            }}
+          >
+            <option value="username">Username</option>
+            <option value="email">Email</option>
+            <option value="password">Password</option>
+          </select>
           <br />
 
-          <label htmlFor="newPassword">New Password: </label>
-          <input
-            type="password"
-            id="newPassword"
-            name="newPassword"
-            placeholder="Leave blank to keep current password"
-            value={newPassword}
-            onChange={(event) => setNewPassword(event.target.value)}
-          />
-          <br />
+          {selectedDetail === "username" && (
+            <>
+              <label htmlFor="newUsername">New Username: </label>
+              <input
+                type="text"
+                id="newUsername"
+                name="newUsername"
+                value={newUsername}
+                onChange={(event) => setNewUsername(event.target.value)}
+                required
+              />
+              <br />
+            </>
+          )}
 
-          <label htmlFor="confirmPassword">Confirm New Password: </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={confirmPassword}
-            onChange={(event) => setConfirmPassword(event.target.value)}
-          />
-          <br />
+          {selectedDetail === "email" && (
+            <>
+              <label htmlFor="newEmail">New Email: </label>
+              <input
+                type="email"
+                id="newEmail"
+                name="newEmail"
+                value={newEmail}
+                onChange={(event) => setNewEmail(event.target.value)}
+                required
+              />
+              <br />
+            </>
+          )}
+
+          {selectedDetail === "password" && (
+            <>
+              <label htmlFor="newPassword">New Password: </label>
+              <input
+                type="password"
+                id="newPassword"
+                name="newPassword"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                required
+              />
+              <br />
+
+              <label htmlFor="confirmPassword">Confirm New Password: </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                required
+              />
+              <br />
+            </>
+          )}
 
           {errorMessage && <p>{errorMessage}</p>}
           {successMessage && <p>{successMessage}</p>}
 
           <button className="submit" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save Changes"}
+            {isSubmitting ? "Saving..." : "Save Change"}
           </button>
         </form>
       </main>
