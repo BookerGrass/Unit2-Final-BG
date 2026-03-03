@@ -16,6 +16,8 @@ function CreateBuddy() {
   };
 
   const [selectedImage, setSelectedImage] = useState("cat");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
 
@@ -31,8 +33,47 @@ function CreateBuddy() {
     setSelectedImage(e.target.value);
   };
 
-  const handleSave = () => {
-    navigate("/home", { state: { image: imageOptions[selectedImage] } });
+  const handleSave = async () => {
+    const loggedInUsername = localStorage.getItem("loggedInUsername");
+
+    if (!loggedInUsername) {
+      setErrorMessage("You must be logged in to save a buddy.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    try {
+      const baseUrl =
+        import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+      const response = await fetch(
+        `${baseUrl}/api/users/username/${encodeURIComponent(loggedInUsername)}/buddy`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ buddy: selectedImage }),
+        },
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          setErrorMessage("User not found.");
+        } else {
+          setErrorMessage("Failed to save buddy. Please try again.");
+        }
+        setIsSubmitting(false);
+        return;
+      }
+
+      const savedUser = await response.json();
+      navigate("/home", { state: { image: imageOptions[selectedImage] } });
+    } catch (error) {
+      setErrorMessage("Cannot reach the server. Try again later.");
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -46,13 +87,19 @@ function CreateBuddy() {
           id="animalDropdown"
           onChange={handleChange}
           value={selectedImage}
+          disabled={isSubmitting}
         >
           <option value="cat">Cat</option>
           <option value="dog">Dog</option>
           <option value="lizard">Lizard</option>
         </select>
-        <button onClick={handleSave} className="save-buddy">
-          Save Your Buddy
+        {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+        <button
+          onClick={handleSave}
+          className="save-buddy"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Saving..." : "Save Your Buddy"}
         </button>
       </div>
       <div className="image-container">
