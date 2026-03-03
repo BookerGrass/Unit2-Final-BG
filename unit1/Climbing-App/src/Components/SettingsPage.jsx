@@ -10,11 +10,19 @@ function SettingsPage() {
   const [selectedDetail, setSelectedDetail] = useState("username");
   const [newUsername, setNewUsername] = useState(storedUsername ?? "");
   const [newEmail, setNewEmail] = useState("");
+  const [selectedBuddy, setSelectedBuddy] = useState("cat");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const buddyOptions = {
+    cat: "https://www.catbehaviourist.com/wp-content/uploads/2015/11/cat-in-tree-1.jpg",
+    dog: "https://gripped.com/wp-content/uploads/2018/03/Biscuit-Dog.jpg",
+    lizard:
+      "https://images.pexels.com/photos/17020788/pexels-photo-17020788/free-photo-of-a-lizard-climbing-on-the-rock.jpeg",
+  };
 
   if (!storedUsername) {
     return (
@@ -72,6 +80,39 @@ function SettingsPage() {
       ok: false,
       message: "Could not update account. Please try again later.",
     };
+  };
+
+  const updateBuddy = async (baseUrl, usernameToUpdate, buddy) => {
+    try {
+      const response = await fetch(
+        `${baseUrl}/api/users/username/${encodeURIComponent(usernameToUpdate)}/buddy`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ buddy }),
+        },
+      );
+
+      if (response.ok) {
+        return { ok: true };
+      }
+
+      if (response.status === 404) {
+        return { ok: false, message: "User not found." };
+      }
+
+      return {
+        ok: false,
+        message: "Could not update buddy. Please try again later.",
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        message: "Cannot reach the server. Try again later.",
+      };
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -142,7 +183,10 @@ function SettingsPage() {
 
     setIsSubmitting(true);
 
-    const result = await updateUser(baseUrl, currentUsername, body);
+    const result =
+      selectedDetail === "buddy"
+        ? await updateBuddy(baseUrl, currentUsername, selectedBuddy)
+        : await updateUser(baseUrl, currentUsername, body);
 
     if (!result.ok) {
       setErrorMessage(result.message);
@@ -168,6 +212,10 @@ function SettingsPage() {
       setSuccessMessage("Password updated successfully.");
     }
 
+    if (selectedDetail === "buddy") {
+      setSuccessMessage("Buddy updated successfully.");
+    }
+
     setIsSubmitting(false);
   };
 
@@ -191,6 +239,7 @@ function SettingsPage() {
             <option value="username">Username</option>
             <option value="email">Email</option>
             <option value="password">Password</option>
+            <option value="buddy">Buddy</option>
           </select>
           <br />
 
@@ -245,6 +294,30 @@ function SettingsPage() {
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
                 required
+              />
+              <br />
+            </>
+          )}
+
+          {selectedDetail === "buddy" && (
+            <>
+              <label htmlFor="selectedBuddy">Choose Buddy: </label>
+              <select
+                id="selectedBuddy"
+                name="selectedBuddy"
+                value={selectedBuddy}
+                onChange={(event) => setSelectedBuddy(event.target.value)}
+              >
+                <option value="cat">Cat</option>
+                <option value="dog">Dog</option>
+                <option value="lizard">Lizard</option>
+              </select>
+              <br />
+              <img
+                src={buddyOptions[selectedBuddy]}
+                alt={selectedBuddy}
+                className="buddy-image"
+                style={{ width: "250px", height: "auto", borderRadius: "12px" }}
               />
               <br />
             </>
