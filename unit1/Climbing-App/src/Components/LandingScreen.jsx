@@ -15,7 +15,7 @@ function LandingScreen() {
         />
         <div className="centered">
           <h1>Welcome To Climb Buddy!</h1>
-          <h2>Sign Up Below</h2>
+          <h2>Sign Up or Log In Below</h2>
           <Link to="/signup">
             <button className="get-started">Get Started</button>
           </Link>

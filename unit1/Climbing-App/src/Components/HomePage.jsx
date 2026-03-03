@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "./NavBar";
 import Footer from "./Footer";
 import "./Main.css";
@@ -9,9 +9,35 @@ function getRandomStringFromArray(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+const buddyImageOptions = {
+  cat: "https://www.catbehaviourist.com/wp-content/uploads/2015/11/cat-in-tree-1.jpg",
+  dog: "https://gripped.com/wp-content/uploads/2018/03/Biscuit-Dog.jpg",
+  lizard:
+    "https://images.pexels.com/photos/17020788/pexels-photo-17020788/free-photo-of-a-lizard-climbing-on-the-rock.jpeg",
+};
+
+function resolveBuddyImage(buddyValue) {
+  if (!buddyValue) {
+    return "";
+  }
+
+  if (buddyImageOptions[buddyValue]) {
+    return buddyImageOptions[buddyValue];
+  }
+
+  if (typeof buddyValue === "string" && /^https?:\/\//.test(buddyValue)) {
+    return buddyValue;
+  }
+
+  return "";
+}
+
 function HomePage() {
   const loggedInUsername = localStorage.getItem("loggedInUsername");
   const navigate = useNavigate();
+  const location = useLocation();
+  const buddyFromRoute = location.state?.image;
+  const [buddyImage, setBuddyImage] = useState(buddyFromRoute ?? "");
 
   if (!loggedInUsername) {
     return (
@@ -100,8 +126,42 @@ function HomePage() {
     navigate("/login");
   };
 
-  const location = useLocation();
-  const image = location.state?.image;
+  useEffect(() => {
+    let isCancelled = false;
+
+    const fetchBuddy = async () => {
+      if (!loggedInUsername) {
+        return;
+      }
+
+      try {
+        const baseUrl =
+          import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+        const response = await fetch(
+          `${baseUrl}/api/users/username/${encodeURIComponent(loggedInUsername)}`,
+        );
+
+        if (!response.ok) {
+          return;
+        }
+
+        const user = await response.json();
+        const resolvedBuddyImage = resolveBuddyImage(user.buddy);
+
+        if (!isCancelled && resolvedBuddyImage) {
+          setBuddyImage(resolvedBuddyImage);
+        }
+      } catch (error) {
+        return;
+      }
+    };
+
+    fetchBuddy();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [loggedInUsername]);
 
   return (
     <div>
@@ -158,9 +218,9 @@ function HomePage() {
           <h2>Positive Quote of the Day</h2>
           <p>{currentString}</p>
         </div>
-        {image ? (
+        {buddyImage ? (
           <img
-            src={image}
+            src={buddyImage}
             alt="Your Buddy"
             style={{ width: "250px", height: "auto", borderRadius: "12px" }}
             className="buddy-image"
