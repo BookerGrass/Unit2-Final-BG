@@ -59,6 +59,7 @@ function HomePage() {
   const [achievedTasks, setAchievedTasks] = useState([]);
   const [taskErrorMessage, setTaskErrorMessage] = useState("");
   const [deletingGoalId, setDeletingGoalId] = useState(null);
+  const [showSecretMessage, setShowSecretMessage] = useState(false);
   const [showFireworks, setShowFireworks] = useState(false);
   const previousAchievedCountRef = useRef(0);
 
@@ -396,7 +397,15 @@ function HomePage() {
           </form>
         </div>
         <div className="flex-item">
-          <h2>Achievements</h2>
+          <h2
+            onMouseEnter={() => setShowSecretMessage(true)}
+            onMouseLeave={() => setShowSecretMessage(false)}
+          >
+            Achievements
+          </h2>
+          {showSecretMessage && (
+            <p>Get to 5 achievements to unlock a special reward!</p>
+          )}
           {isLoading ? (
             <p>Loading achievements...</p>
           ) : (
