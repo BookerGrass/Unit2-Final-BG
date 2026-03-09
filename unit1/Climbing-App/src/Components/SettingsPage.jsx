@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "./NavBar";
 import Footer from "./Footer";
 import "./Main.css";
 
 function SettingsPage() {
+  const navigate = useNavigate();
   const storedUsername = localStorage.getItem("loggedInUsername");
   const [currentUsername, setCurrentUsername] = useState(storedUsername ?? "");
   const [selectedDetail, setSelectedDetail] = useState("username");
@@ -13,6 +14,7 @@ function SettingsPage() {
   const [selectedBuddy, setSelectedBuddy] = useState("cat");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -124,6 +126,56 @@ function SettingsPage() {
     }
   };
 
+  const deleteUserAccount = async (baseUrl, usernameToDelete) => {
+    try {
+      const userResponse = await fetch(
+        `${baseUrl}/api/users/username/${encodeURIComponent(usernameToDelete)}`,
+      );
+
+      if (userResponse.status === 404) {
+        return { ok: false, message: "User not found." };
+      }
+
+      if (!userResponse.ok) {
+        return {
+          ok: false,
+          message: "Could not find account. Please try again later.",
+        };
+      }
+
+      const user = await userResponse.json();
+
+      if (user?.id == null) {
+        return {
+          ok: false,
+          message: "Account ID not found. Cannot delete account.",
+        };
+      }
+
+      const deleteResponse = await fetch(`${baseUrl}/api/users/${user.id}`, {
+        method: "DELETE",
+      });
+
+      if (deleteResponse.status === 404) {
+        return { ok: false, message: "User not found." };
+      }
+
+      if (deleteResponse.status === 204 || deleteResponse.ok) {
+        return { ok: true };
+      }
+
+      return {
+        ok: false,
+        message: "Could not delete account. Please try again later.",
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        message: "Cannot reach the server. Try again later.",
+      };
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -187,15 +239,27 @@ function SettingsPage() {
       body.password = newPassword;
     }
 
+    if (selectedDetail === "delete") {
+      if (deleteConfirmation.trim() !== "delete") {
+        setErrorMessage('Type "delete" to confirm account deletion.');
+        return;
+      }
+    }
+
     const baseUrl =
       import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
     setIsSubmitting(true);
 
-    const result =
-      selectedDetail === "buddy"
-        ? await updateBuddy(baseUrl, currentUsername, selectedBuddy)
-        : await updateUser(baseUrl, currentUsername, body);
+    let result;
+
+    if (selectedDetail === "buddy") {
+      result = await updateBuddy(baseUrl, currentUsername, selectedBuddy);
+    } else if (selectedDetail === "delete") {
+      result = await deleteUserAccount(baseUrl, currentUsername);
+    } else {
+      result = await updateUser(baseUrl, currentUsername, body);
+    }
 
     if (!result.ok) {
       setErrorMessage(result.message);
@@ -225,6 +289,14 @@ function SettingsPage() {
       setSuccessMessage("Buddy updated successfully.");
     }
 
+    if (selectedDetail === "delete") {
+      localStorage.removeItem("loggedInUsername");
+      setSuccessMessage("Account deleted successfully.");
+      setIsSubmitting(false);
+      navigate("/login");
+      return;
+    }
+
     setIsSubmitting(false);
   };
 
@@ -243,12 +315,14 @@ function SettingsPage() {
               setSelectedDetail(event.target.value);
               setErrorMessage("");
               setSuccessMessage("");
+              setDeleteConfirmation("");
             }}
           >
             <option value="username">Username</option>
             <option value="email">Email</option>
             <option value="password">Password</option>
             <option value="buddy">Buddy</option>
+            <option value="delete">Delete Account</option>
           </select>
           <br />
 
@@ -332,11 +406,31 @@ function SettingsPage() {
             </>
           )}
 
+          {selectedDetail === "delete" && (
+            <>
+              <p>Type "delete" to permanently remove your account.</p>
+              <label htmlFor="deleteConfirmation">Confirm delete: </label>
+              <input
+                type="text"
+                id="deleteConfirmation"
+                name="deleteConfirmation"
+                value={deleteConfirmation}
+                onChange={(event) => setDeleteConfirmation(event.target.value)}
+                required
+              />
+              <br />
+            </>
+          )}
+
           {errorMessage && <p>{errorMessage}</p>}
           {successMessage && <p>{successMessage}</p>}
 
           <button className="submit" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save Change"}
+            {isSubmitting
+              ? "Saving..."
+              : selectedDetail === "delete"
+                ? "Delete Account"
+                : "Save Change"}
           </button>
         </form>
       </main>
