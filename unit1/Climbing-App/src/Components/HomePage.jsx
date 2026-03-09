@@ -39,7 +39,6 @@ function HomePage() {
   const buddyFromRoute = location.state?.image;
   const [buddyImage, setBuddyImage] = useState(buddyFromRoute ?? "");
 
-  // NEW: State for user ID and database integration
   const [userId, setUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -54,7 +53,6 @@ function HomePage() {
     getRandomStringFromArray(quotes),
   );
 
-  // CHANGED: Now stores Goal objects from database instead of just strings
   const [inProgressTasks, setInProgressTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [achievedTasks, setAchievedTasks] = useState([]);
@@ -98,14 +96,12 @@ function HomePage() {
     });
   };
 
-  // NEW: Function to fetch goals from database
   const fetchGoals = async (userIdParam) => {
     const id = userIdParam || userId;
     if (!id) return;
 
     try {
       setTaskErrorMessage("");
-      // Fetch in-progress goals
       const inProgressResponse = await fetch(
         `${baseUrl}/api/goals/user/${id}/in-progress`,
       );
@@ -114,7 +110,6 @@ function HomePage() {
         setInProgressTasks(inProgressGoals);
       }
 
-      // Fetch achieved goals
       const achievedResponse = await fetch(
         `${baseUrl}/api/goals/user/${id}/achieved`,
       );
@@ -130,7 +125,6 @@ function HomePage() {
     }
   };
 
-  // UPDATED: Fetch user info and goals on mount
   useEffect(() => {
     let isCancelled = false;
 
@@ -160,7 +154,6 @@ function HomePage() {
           setBuddyImage(resolvedBuddyImage);
         }
 
-        // Fetch goals after getting user ID
         await fetchGoals(user.id);
       } catch (error) {
         console.error("Error fetching user or goals:", error);
@@ -175,7 +168,6 @@ function HomePage() {
     };
   }, [loggedInUsername]);
 
-  // UPDATED: Increment goal and save to database
   const increment = async (goal) => {
     if (!userId) return;
 
@@ -235,7 +227,6 @@ function HomePage() {
     }
   };
 
-  // UPDATED: Add task and save to database
   const handleAddTask = async (event) => {
     event.preventDefault();
 
@@ -310,7 +301,7 @@ function HomePage() {
           ) : (
             <ol>
               {inProgressTasks.length === 0 ? (
-                <p>All tasks completed!</p>
+                <p>No In Progress Tasks</p>
               ) : (
                 inProgressTasks.map((goal) => (
                   <li key={goal.id}>
