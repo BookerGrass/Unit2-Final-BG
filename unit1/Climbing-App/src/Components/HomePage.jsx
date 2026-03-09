@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Navbar from "./NavBar";
 import Footer from "./Footer";
 import "./Main.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
+import { Fireworks } from "@fireworks-js/react";
 
 function getRandomStringFromArray(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -58,6 +59,8 @@ function HomePage() {
   const [achievedTasks, setAchievedTasks] = useState([]);
   const [taskErrorMessage, setTaskErrorMessage] = useState("");
   const [deletingGoalId, setDeletingGoalId] = useState(null);
+  const [showFireworks, setShowFireworks] = useState(false);
+  const previousAchievedCountRef = useRef(0);
 
   const maxCount = 5;
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
@@ -168,6 +171,24 @@ function HomePage() {
       isCancelled = true;
     };
   }, [loggedInUsername]);
+  useEffect(() => {
+    const previousCount = previousAchievedCountRef.current;
+    const currentCount = achievedTasks.length;
+
+    if (previousCount < 5 && currentCount === 5) {
+      setShowFireworks(true);
+
+      const timeoutId = setTimeout(() => {
+        setShowFireworks(false);
+      }, 5000);
+
+      previousAchievedCountRef.current = currentCount;
+
+      return () => clearTimeout(timeoutId);
+    }
+
+    previousAchievedCountRef.current = currentCount;
+  }, [achievedTasks.length]);
 
   const increment = async (goal) => {
     if (!userId) return;
@@ -204,6 +225,7 @@ function HomePage() {
         setInProgressTasks((prev) =>
           prev.filter((item) => item.id !== goal.id),
         );
+
         setAchievedTasks((prev) => [
           ...prev,
           {
@@ -299,6 +321,22 @@ function HomePage() {
 
   return (
     <div>
+      {showFireworks && (
+        <Fireworks
+          options={{
+            rocketsPoint: { min: 0, max: 100 },
+          }}
+          style={{
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            position: "fixed",
+            zIndex: 9999,
+            pointerEvents: "none",
+          }}
+        />
+      )}
       <Navbar />
       <div className="home-image">
         <img
