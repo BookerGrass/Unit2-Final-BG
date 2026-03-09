@@ -26,3 +26,18 @@ public class Goal {
 
 
     public Goal() {}
+
+    public void setCurrentCount(int i) {
+    }
+
+    public void setAchieved(boolean b) {
+    }
+
+    public int getCurrentCount() {
+        return 0;
+    }
+
+    public int getMaxCount() {
+        return 0;
+    };
+}
