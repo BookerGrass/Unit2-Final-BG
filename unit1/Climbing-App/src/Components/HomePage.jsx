@@ -57,6 +57,7 @@ function HomePage() {
   const [newTask, setNewTask] = useState("");
   const [achievedTasks, setAchievedTasks] = useState([]);
   const [taskErrorMessage, setTaskErrorMessage] = useState("");
+  const [deletingGoalId, setDeletingGoalId] = useState(null);
 
   const maxCount = 5;
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
@@ -267,6 +268,30 @@ function HomePage() {
     }
   };
 
+  const handleDeleteAchievement = async (goalId) => {
+    setTaskErrorMessage("");
+    setDeletingGoalId(goalId);
+
+    try {
+      const response = await fetch(`${baseUrl}/api/goals/${goalId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok && response.status !== 204) {
+        setTaskErrorMessage("Could not delete achievement.");
+        return;
+      }
+
+      setAchievedTasks((prev) => prev.filter((goal) => goal.id !== goalId));
+      await fetchGoals();
+    } catch (error) {
+      console.error("Error deleting achievement:", error);
+      setTaskErrorMessage("Could not delete achievement.");
+    } finally {
+      setDeletingGoalId(null);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("loggedInUsername");
     navigate("/login");
@@ -342,11 +367,22 @@ function HomePage() {
                 <p>No achievements yet</p>
               ) : (
                 achievedTasks.map((goal) => (
-                  <li key={goal.id}>{goal.taskName}</li>
+                  <li key={goal.id}>
+                    {goal.taskName}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteAchievement(goal.id)}
+                      disabled={deletingGoalId === goal.id}
+                    >
+                      {deletingGoalId === goal.id ? "Deleting..." : "Delete"}
+                    </button>
+                  </li>
                 ))
               )}
             </ol>
           )}
+
+          {taskErrorMessage && <p>{taskErrorMessage}</p>}
         </div>
         <div className="flex-item">
           <h2>Positive Quote of the Day</h2>
