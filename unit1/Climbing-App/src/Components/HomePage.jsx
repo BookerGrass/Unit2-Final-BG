@@ -39,6 +39,30 @@ function HomePage() {
   const buddyFromRoute = location.state?.image;
   const [buddyImage, setBuddyImage] = useState(buddyFromRoute ?? "");
 
+  // NEW: State for user ID and database integration
+  const [userId, setUserId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const quotes = [
+    "Go You",
+    "Have a low gravity day",
+    "Just walking into the gym is a success",
+    "Your current project is a future warmup",
+  ];
+
+  const [currentString, setCurrentString] = useState(() =>
+    getRandomStringFromArray(quotes),
+  );
+
+  // CHANGED: Now stores Goal objects from database instead of just strings
+  const [inProgressTasks, setInProgressTasks] = useState([]);
+  const [newTask, setNewTask] = useState("");
+  const [achievedTasks, setAchievedTasks] = useState([]);
+  const [taskErrorMessage, setTaskErrorMessage] = useState("");
+
+  const maxCount = 5;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+
   if (!loggedInUsername) {
     return (
       <div>
@@ -66,30 +90,6 @@ function HomePage() {
     );
   }
 
-  const quotes = [
-    "Go You",
-    "Have a low gravity day",
-    "Just walking into the gym is a success",
-    "Your current project is a future warmup",
-  ];
-
-  const [currentString, setCurrentString] = useState(() =>
-    getRandomStringFromArray(quotes),
-  );
-
-  const [inProgressTasks, setInProgressTasks] = useState([
-    "Send a Climb",
-    "Try a climb outside of your normal tag range",
-    "Stretch before climbing",
-  ]);
-  const [newTask, setNewTask] = useState("");
-
-  const [counts, setCounts] = useState([0, 0, 0]);
-
-  const [achievedTasks, setAchievedTasks] = useState([]);
-
-  const maxCount = 5;
-
   const triggerConfetti = () => {
     confetti({
       particleCount: 100,
@@ -98,32 +98,149 @@ function HomePage() {
     });
   };
 
-  const increment = (index) => {
-    const newCounts = [...counts];
+  // NEW: Function to fetch goals from database
+  const fetchGoals = async (userIdParam) => {
+    const id = userIdParam || userId;
+    if (!id) return;
 
-    if (newCounts[index] < maxCount) {
-      newCounts[index] += 1;
-
-      if (newCounts[index] === maxCount) {
-        const completedTask = inProgressTasks[index];
-        triggerConfetti();
-        setAchievedTasks((prev) => [...prev, completedTask]);
-
-        const updatedTasks = inProgressTasks.filter((_, i) => i !== index);
-        const updatedCounts = newCounts.filter((_, i) => i !== index);
-
-        setInProgressTasks(updatedTasks);
-        setCounts(updatedCounts);
-
-        return;
+    try {
+      setTaskErrorMessage("");
+      // Fetch in-progress goals
+      const inProgressResponse = await fetch(
+        `${baseUrl}/api/goals/user/${id}/in-progress`,
+      );
+      if (inProgressResponse.ok) {
+        const inProgressGoals = await inProgressResponse.json();
+        setInProgressTasks(inProgressGoals);
       }
 
-      setCounts(newCounts);
+      // Fetch achieved goals
+      const achievedResponse = await fetch(
+        `${baseUrl}/api/goals/user/${id}/achieved`,
+      );
+      if (achievedResponse.ok) {
+        const achievedGoals = await achievedResponse.json();
+        setAchievedTasks(achievedGoals);
+      }
+    } catch (error) {
+      console.error("Error fetching goals:", error);
+      setTaskErrorMessage("Could not load goals from server.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleAddTask = (event) => {
+  // UPDATED: Fetch user info and goals on mount
+  useEffect(() => {
+    let isCancelled = false;
+
+    const fetchUserAndGoals = async () => {
+      if (!loggedInUsername) {
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${baseUrl}/api/users/username/${encodeURIComponent(loggedInUsername)}`,
+        );
+
+        if (!response.ok) {
+          setIsLoading(false);
+          return;
+        }
+
+        const user = await response.json();
+
+        if (isCancelled) return;
+
+        setUserId(user.id);
+
+        const resolvedBuddyImage = resolveBuddyImage(user.buddy);
+        if (resolvedBuddyImage) {
+          setBuddyImage(resolvedBuddyImage);
+        }
+
+        // Fetch goals after getting user ID
+        await fetchGoals(user.id);
+      } catch (error) {
+        console.error("Error fetching user or goals:", error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserAndGoals();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [loggedInUsername]);
+
+  // UPDATED: Increment goal and save to database
+  const increment = async (goal) => {
+    if (!userId) return;
+
+    setTaskErrorMessage("");
+    const nextMaxCount = goal.maxCount ?? maxCount;
+    const currentCount = goal.currentCount ?? 0;
+    const newCount = Math.min(currentCount + 1, nextMaxCount);
+    const achieved = newCount >= nextMaxCount;
+
+    try {
+      const response = await fetch(`${baseUrl}/api/goals/${goal.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: goal.id,
+          userId,
+          taskName: goal.taskName,
+          currentCount: newCount,
+          maxCount: nextMaxCount,
+          achieved,
+        }),
+      });
+
+      if (!response.ok) {
+        setTaskErrorMessage("Could not update task progress.");
+        return;
+      }
+
+      if (achieved) {
+        triggerConfetti();
+        setInProgressTasks((prev) =>
+          prev.filter((item) => item.id !== goal.id),
+        );
+        setAchievedTasks((prev) => [
+          ...prev,
+          {
+            ...goal,
+            currentCount: newCount,
+            maxCount: nextMaxCount,
+            achieved: true,
+          },
+        ]);
+      } else {
+        setInProgressTasks((prev) =>
+          prev.map((item) =>
+            item.id === goal.id ? { ...item, currentCount: newCount } : item,
+          ),
+        );
+      }
+
+      await fetchGoals();
+    } catch (error) {
+      console.error("Error updating goal:", error);
+      setTaskErrorMessage("Could not update task progress.");
+    }
+  };
+
+  // UPDATED: Add task and save to database
+  const handleAddTask = async (event) => {
     event.preventDefault();
+
+    if (!userId) return;
+    setTaskErrorMessage("");
 
     const trimmedTask = newTask.trim();
 
@@ -131,52 +248,38 @@ function HomePage() {
       return;
     }
 
-    setInProgressTasks((prev) => [...prev, trimmedTask]);
-    setCounts((prev) => [...prev, 0]);
-    setNewTask("");
+    try {
+      const response = await fetch(`${baseUrl}/api/goals`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userId,
+          taskName: trimmedTask,
+          currentCount: 0,
+          maxCount: maxCount,
+          achieved: false,
+        }),
+      });
+
+      if (response.ok) {
+        setNewTask("");
+        await fetchGoals();
+        return;
+      }
+
+      setTaskErrorMessage("Could not create task.");
+    } catch (error) {
+      console.error("Error creating goal:", error);
+      setTaskErrorMessage("Could not create task.");
+    }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("loggedInUsername");
     navigate("/login");
   };
-
-  useEffect(() => {
-    let isCancelled = false;
-
-    const fetchBuddy = async () => {
-      if (!loggedInUsername) {
-        return;
-      }
-
-      try {
-        const baseUrl =
-          import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
-        const response = await fetch(
-          `${baseUrl}/api/users/username/${encodeURIComponent(loggedInUsername)}`,
-        );
-
-        if (!response.ok) {
-          return;
-        }
-
-        const user = await response.json();
-        const resolvedBuddyImage = resolveBuddyImage(user.buddy);
-
-        if (!isCancelled && resolvedBuddyImage) {
-          setBuddyImage(resolvedBuddyImage);
-        }
-      } catch (error) {
-        return;
-      }
-    };
-
-    fetchBuddy();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [loggedInUsername]);
 
   return (
     <div>
@@ -202,23 +305,30 @@ function HomePage() {
         <div className="flex-item">
           <h2>In Progress</h2>
 
-          <ol>
-            {inProgressTasks.length === 0 ? (
-              <p>All tasks completed!</p>
-            ) : (
-              inProgressTasks.map((task, index) => (
-                <li key={task}>
-                  {task} — {counts[index]}/5
-                  <button
-                    onClick={() => increment(index)}
-                    disabled={counts[index] >= maxCount}
-                  >
-                    +1
-                  </button>
-                </li>
-              ))
-            )}
-          </ol>
+          {isLoading ? (
+            <p>Loading goals...</p>
+          ) : (
+            <ol>
+              {inProgressTasks.length === 0 ? (
+                <p>All tasks completed!</p>
+              ) : (
+                inProgressTasks.map((goal) => (
+                  <li key={goal.id}>
+                    {goal.taskName} — {goal.currentCount}/{goal.maxCount}
+                    <button
+                      onClick={() => increment(goal)}
+                      disabled={goal.currentCount >= goal.maxCount}
+                    >
+                      +1
+                    </button>
+                  </li>
+                ))
+              )}
+            </ol>
+          )}
+
+          {taskErrorMessage && <p>{taskErrorMessage}</p>}
+
           <form onSubmit={handleAddTask}>
             <label htmlFor="newTask">Add a task: </label>
             <input
@@ -233,13 +343,19 @@ function HomePage() {
         </div>
         <div className="flex-item">
           <h2>Achievements</h2>
-          <ol>
-            {achievedTasks.length === 0 ? (
-              <p>No achievements yet</p>
-            ) : (
-              achievedTasks.map((task, index) => <li key={task}>{task}</li>)
-            )}
-          </ol>
+          {isLoading ? (
+            <p>Loading achievements...</p>
+          ) : (
+            <ol>
+              {achievedTasks.length === 0 ? (
+                <p>No achievements yet</p>
+              ) : (
+                achievedTasks.map((goal) => (
+                  <li key={goal.id}>{goal.taskName}</li>
+                ))
+              )}
+            </ol>
+          )}
         </div>
         <div className="flex-item">
           <h2>Positive Quote of the Day</h2>
