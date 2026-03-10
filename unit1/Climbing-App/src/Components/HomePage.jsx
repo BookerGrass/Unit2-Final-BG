@@ -104,6 +104,7 @@ function HomePage() {
   const maxCount = 5;
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
   const earnedStars = Math.floor(dbAchievedCount / 5);
+  const visibleAchievements = achievedTasks.slice(0, 5);
 
   if (!loggedInUsername) {
     return (
@@ -437,7 +438,9 @@ function HomePage() {
         </div>
       </div>
       {earnedStars > 0 && (
-        <div style={{ textAlign: "center", fontSize: "2rem", marginTop: "8px" }}>
+        <div
+          style={{ textAlign: "center", fontSize: "2rem", marginTop: "8px" }}
+        >
           {"⭐".repeat(earnedStars)}
         </div>
       )}
@@ -498,7 +501,7 @@ function HomePage() {
               {achievedTasks.length === 0 ? (
                 <p>No achievements yet</p>
               ) : (
-                achievedTasks.map((goal) => (
+                visibleAchievements.map((goal) => (
                   <li key={goal.id}>
                     {goal.taskName}
                     <button
