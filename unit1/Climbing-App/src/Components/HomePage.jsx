@@ -94,6 +94,7 @@ function HomePage() {
   const [inProgressTasks, setInProgressTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [achievedTasks, setAchievedTasks] = useState([]);
+  const [dbAchievedCount, setDbAchievedCount] = useState(0);
   const [taskErrorMessage, setTaskErrorMessage] = useState("");
   const [showSecretMessage, setShowSecretMessage] = useState(false);
   const [showHelpPopup, setShowHelpPopup] = useState(false);
@@ -102,6 +103,7 @@ function HomePage() {
 
   const maxCount = 5;
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+  const earnedStars = Math.floor(dbAchievedCount / 5);
 
   if (!loggedInUsername) {
     return (
@@ -158,6 +160,7 @@ function HomePage() {
       if (achievedResponse.ok) {
         const achievedGoals = await achievedResponse.json();
         setAchievedTasks(achievedGoals);
+        setDbAchievedCount(achievedGoals.length);
       }
     } catch (error) {
       console.error("Error fetching goals:", error);
@@ -433,6 +436,11 @@ function HomePage() {
           )}
         </div>
       </div>
+      {earnedStars > 0 && (
+        <div style={{ textAlign: "center", fontSize: "2rem", marginTop: "8px" }}>
+          {"⭐".repeat(earnedStars)}
+        </div>
+      )}
       <div className="flex-container">
         <div className="flex-item">
           <h2>In Progress</h2>
