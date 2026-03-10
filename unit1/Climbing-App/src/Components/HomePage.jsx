@@ -95,7 +95,6 @@ function HomePage() {
   const [newTask, setNewTask] = useState("");
   const [achievedTasks, setAchievedTasks] = useState([]);
   const [taskErrorMessage, setTaskErrorMessage] = useState("");
-  const [deletingGoalId, setDeletingGoalId] = useState(null);
   const [showSecretMessage, setShowSecretMessage] = useState(false);
   const [showHelpPopup, setShowHelpPopup] = useState(false);
   const [showFireworks, setShowFireworks] = useState(false);
@@ -329,28 +328,8 @@ function HomePage() {
     }
   };
 
-  const handleDeleteAchievement = async (goalId) => {
-    setTaskErrorMessage("");
-    setDeletingGoalId(goalId);
-
-    try {
-      const response = await fetch(`${baseUrl}/api/goals/${goalId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok && response.status !== 204) {
-        setTaskErrorMessage("Could not delete achievement.");
-        return;
-      }
-
-      setAchievedTasks((prev) => prev.filter((goal) => goal.id !== goalId));
-      await fetchGoals();
-    } catch (error) {
-      console.error("Error deleting achievement:", error);
-      setTaskErrorMessage("Could not delete achievement.");
-    } finally {
-      setDeletingGoalId(null);
-    }
+  const handleDeleteAchievement = (goalId) => {
+    setAchievedTasks((prev) => prev.filter((goal) => goal.id !== goalId));
   };
 
   const handleLogout = () => {
@@ -517,9 +496,8 @@ function HomePage() {
                     <button
                       type="button"
                       onClick={() => handleDeleteAchievement(goal.id)}
-                      disabled={deletingGoalId === goal.id}
                     >
-                      {deletingGoalId === goal.id ? "Deleting..." : "Delete"}
+                      Delete
                     </button>
                   </li>
                 ))
