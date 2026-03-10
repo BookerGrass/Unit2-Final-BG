@@ -104,7 +104,6 @@ function HomePage() {
   const maxCount = 5;
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
   const earnedStars = Math.floor(dbAchievedCount / 5);
-  const visibleAchievements = achievedTasks.slice(0, 5);
 
   if (!loggedInUsername) {
     return (
@@ -494,27 +493,29 @@ function HomePage() {
           {showSecretMessage && (
             <p>Get to 5 achievements to unlock a special reward!</p>
           )}
-          {isLoading ? (
-            <p>Loading achievements...</p>
-          ) : (
-            <ol>
-              {achievedTasks.length === 0 ? (
-                <p>No achievements yet</p>
-              ) : (
-                visibleAchievements.map((goal) => (
-                  <li key={goal.id}>
-                    {goal.taskName}
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteAchievement(goal.id)}
-                    >
-                      Delete
-                    </button>
-                  </li>
-                ))
-              )}
-            </ol>
-          )}
+          <div style={{ maxHeight: "150px", overflowY: "auto" }}>
+            {isLoading ? (
+              <p>Loading achievements...</p>
+            ) : (
+              <ol>
+                {achievedTasks.length === 0 ? (
+                  <p>No achievements yet</p>
+                ) : (
+                  achievedTasks.map((goal) => (
+                    <li key={goal.id}>
+                      {goal.taskName}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteAchievement(goal.id)}
+                      >
+                        Delete
+                      </button>
+                    </li>
+                  ))
+                )}
+              </ol>
+            )}
+          </div>
 
           {taskErrorMessage && <p>{taskErrorMessage}</p>}
         </div>
