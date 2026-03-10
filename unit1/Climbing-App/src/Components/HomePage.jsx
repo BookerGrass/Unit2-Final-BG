@@ -97,6 +97,7 @@ function HomePage() {
   const [taskErrorMessage, setTaskErrorMessage] = useState("");
   const [deletingGoalId, setDeletingGoalId] = useState(null);
   const [showSecretMessage, setShowSecretMessage] = useState(false);
+  const [showHelpPopup, setShowHelpPopup] = useState(false);
   const [showFireworks, setShowFireworks] = useState(false);
   const previousAchievedCountRef = useRef(0);
 
@@ -359,6 +360,66 @@ function HomePage() {
 
   return (
     <div>
+      <button
+        type="button"
+        onClick={() => setShowHelpPopup(true)}
+        style={{
+          position: "fixed",
+          right: "16px",
+          bottom: "16px",
+          width: "32px",
+          height: "32px",
+          borderRadius: "50%",
+          zIndex: 10000,
+          cursor: "pointer",
+        }}
+      >
+        ?
+      </button>
+
+      {showHelpPopup && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10001,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "10px",
+              maxWidth: "420px",
+              width: "90%",
+            }}
+          >
+            <h3>Home Page Help</h3>
+            <p>
+              - In Progress: track goals and click +1 to move toward completion.
+              <p>
+                (Some good goals could be "Come to the climbing gym", "Climb for
+                30 minutes", or "Complete 3 boulder problems")
+              </p>
+            </p>
+            <p>
+              - Achievements: completed goals appear here and can be deleted.
+            </p>
+            <p>- Buddy: shows your selected climbing buddy image.</p>
+            <button type="button" onClick={() => setShowHelpPopup(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {showFireworks && (
         <Fireworks
           options={{
