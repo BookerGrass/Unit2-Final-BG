@@ -15,6 +15,8 @@ function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [clearAchievementsConfirmation, setClearAchievementsConfirmation] =
+    useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -176,6 +178,85 @@ function SettingsPage() {
     }
   };
 
+  const clearUserAchievements = async (baseUrl, usernameToClear) => {
+    try {
+      const userResponse = await fetch(
+        `${baseUrl}/api/users/username/${encodeURIComponent(usernameToClear)}`,
+      );
+
+      if (userResponse.status === 404) {
+        return { ok: false, message: "User not found." };
+      }
+
+      if (!userResponse.ok) {
+        return {
+          ok: false,
+          message: "Could not load user details. Please try again later.",
+        };
+      }
+
+      const user = await userResponse.json();
+
+      if (user?.id == null) {
+        return {
+          ok: false,
+          message: "Account ID not found. Cannot clear achievements.",
+        };
+      }
+
+      const achievedResponse = await fetch(
+        `${baseUrl}/api/goals/user/${user.id}/achieved`,
+      );
+
+      if (!achievedResponse.ok) {
+        return {
+          ok: false,
+          message: "Could not load achievements. Please try again later.",
+        };
+      }
+
+      const achievedGoals = await achievedResponse.json();
+
+      const uniqueGoalIds = [
+        ...new Set(
+          achievedGoals
+            .map((goal) => goal?.id)
+            .filter((goalId) => goalId != null),
+        ),
+      ];
+
+      const deleteResults = await Promise.allSettled(
+        uniqueGoalIds.map((goalId) =>
+          fetch(`${baseUrl}/api/goals/${goalId}`, {
+            method: "DELETE",
+          }),
+        ),
+      );
+
+      const hasDeleteFailure = deleteResults.some((result) => {
+        if (result.status !== "fulfilled") {
+          return true;
+        }
+
+        return !(result.value.ok || result.value.status === 204);
+      });
+
+      if (hasDeleteFailure) {
+        return {
+          ok: false,
+          message: "Some achievements could not be deleted. Please try again.",
+        };
+      }
+
+      return { ok: true };
+    } catch (error) {
+      return {
+        ok: false,
+        message: "Cannot reach the server. Try again later.",
+      };
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -246,6 +327,13 @@ function SettingsPage() {
       }
     }
 
+    if (selectedDetail === "clearGoals") {
+      if (clearAchievementsConfirmation.trim() !== "clear") {
+        setErrorMessage('Type "clear" to confirm clearing Achievements.');
+        return;
+      }
+    }
+
     const baseUrl =
       import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
@@ -257,6 +345,8 @@ function SettingsPage() {
       result = await updateBuddy(baseUrl, currentUsername, selectedBuddy);
     } else if (selectedDetail === "delete") {
       result = await deleteUserAccount(baseUrl, currentUsername);
+    } else if (selectedDetail === "clearGoals") {
+      result = await clearUserAchievements(baseUrl, currentUsername);
     } else {
       result = await updateUser(baseUrl, currentUsername, body);
     }
@@ -297,6 +387,11 @@ function SettingsPage() {
       return;
     }
 
+    if (selectedDetail === "clearGoals") {
+      setClearAchievementsConfirmation("");
+      setSuccessMessage("Achievements cleared successfully.");
+    }
+
     setIsSubmitting(false);
   };
 
@@ -316,12 +411,14 @@ function SettingsPage() {
               setErrorMessage("");
               setSuccessMessage("");
               setDeleteConfirmation("");
+              setClearAchievementsConfirmation("");
             }}
           >
             <option value="username">Username</option>
             <option value="email">Email</option>
             <option value="password">Password</option>
             <option value="buddy">Buddy</option>
+            <option value="clearGoals">Clear Achievements</option>
             <option value="delete">Delete Account</option>
           </select>
           <br />
@@ -422,6 +519,24 @@ function SettingsPage() {
             </>
           )}
 
+          {selectedDetail === "clearGoals" && (
+            <>
+              <p>Type "clear" to delete all achieved goals.</p>
+              <label htmlFor="clearGoalsConfirmation">Confirm clear: </label>
+              <input
+                type="text"
+                id="clearGoalsConfirmation"
+                name="clearGoalsConfirmation"
+                value={clearAchievementsConfirmation}
+                onChange={(event) =>
+                  setClearAchievementsConfirmation(event.target.value)
+                }
+                required
+              />
+              <br />
+            </>
+          )}
+
           {errorMessage && <p>{errorMessage}</p>}
           {successMessage && <p>{successMessage}</p>}
 
@@ -430,7 +545,9 @@ function SettingsPage() {
               ? "Saving..."
               : selectedDetail === "delete"
                 ? "Delete Account"
-                : "Save Change"}
+                : selectedDetail === "clearGoals"
+                  ? "Clear Achievements"
+                  : "Save Change"}
           </button>
         </form>
       </main>
