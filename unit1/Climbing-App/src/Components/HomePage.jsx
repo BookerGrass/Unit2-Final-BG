@@ -331,10 +331,6 @@ function HomePage() {
     }
   };
 
-  const handleDeleteAchievement = (goalId) => {
-    setAchievedTasks((prev) => prev.filter((goal) => goal.id !== goalId));
-  };
-
   const handleLogout = () => {
     localStorage.removeItem("loggedInUsername");
     navigate("/login");
@@ -502,15 +498,7 @@ function HomePage() {
                   <p>No achievements yet</p>
                 ) : (
                   achievedTasks.map((goal) => (
-                    <li key={goal.id}>
-                      {goal.taskName}
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteAchievement(goal.id)}
-                      >
-                        Delete
-                      </button>
-                    </li>
+                    <li key={goal.id}>{goal.taskName}</li>
                   ))
                 )}
               </ol>
