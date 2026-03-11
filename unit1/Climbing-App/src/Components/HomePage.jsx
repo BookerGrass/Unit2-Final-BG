@@ -584,32 +584,37 @@ function HomePage() {
           <h2>Positive Quote of the Day</h2>
           <p>{currentString}</p>
         </div>
-        {buddyImage ? (
-          <img
-            src={buddyImage}
-            alt="Your Buddy"
-            style={{ width: "250px", height: "auto", borderRadius: "12px" }}
-            className="buddy-image"
-          />
-        ) : (
-          <p>No buddy selected yet.</p>
-        )}
       </div>
-      <div className="flex-item">
-        <h2>Rest Timer</h2>
-        <p>
-          {minutes}:{seconds}
-        </p>
+      <div className="flex-container">
+        <div className="flex-item">
+          <h2>Your Climbing Buddy</h2>
+          {buddyImage ? (
+            <img
+              src={buddyImage}
+              alt="Your Buddy"
+              style={{ width: "250px", height: "auto", borderRadius: "12px" }}
+              className="buddy-image"
+            />
+          ) : (
+            <p>No buddy selected yet.</p>
+          )}
+        </div>
+        <div className="flex-item">
+          <h2>Rest Timer</h2>
+          <p>
+            {minutes}:{seconds}
+          </p>
 
-        <button type="button" onClick={startTimer} disabled={isTimerRunning}>
-          Start 5:00
-        </button>
-        <button type="button" onClick={stopTimer} disabled={!isTimerRunning}>
-          Pause
-        </button>
-        <button type="button" onClick={resetTimer}>
-          Reset
-        </button>
+          <button type="button" onClick={startTimer} disabled={isTimerRunning}>
+            Start 5:00
+          </button>
+          <button type="button" onClick={stopTimer} disabled={!isTimerRunning}>
+            Pause
+          </button>
+          <button type="button" onClick={resetTimer}>
+            Reset
+          </button>
+        </div>
       </div>
       <Footer />
     </div>
