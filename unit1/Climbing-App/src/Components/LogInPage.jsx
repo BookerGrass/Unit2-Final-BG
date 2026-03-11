@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./NavBar";
 import Footer from "./Footer";
+import FormField from "./FormField";
 import "./Main.css";
 
 function LoginPage() {
@@ -69,30 +70,23 @@ function LoginPage() {
       <Navbar />
       <form className="flex-item" onSubmit={handleSubmit}>
         <h1 className="title">Log In</h1>
-
-        <label htmlFor="username">Username: </label>
-        <input
-          type="text"
+        <FormField
           id="username"
-          name="username"
-          placeholder="Username"
+          label="Username: "
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          placeholder="Username"
           required
         />
-        <br />
-
-        <label htmlFor="password">Password: </label>
-        <input
-          type="password"
+        <FormField
           id="password"
-          name="password"
-          placeholder="Password"
+          label="Password: "
+          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
           required
         />
-        <br />
 
         {errorMessage && <p>{errorMessage}</p>}
         {successMessage && <p>{successMessage}</p>}

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Navbar from "./NavBar";
 import Footer from "./Footer";
+import FormField from "./FormField";
 import { useNavigate } from "react-router-dom";
 import "./Main.css";
 
@@ -80,43 +81,35 @@ function SignUp() {
       <Navbar />
       <form className="flex-item" onSubmit={handleSubmit}>
         <h1 className="title">Sign Up Below</h1>
-        <label htmlFor="username">Username: </label>
-        <input
-          type="text"
+        <FormField
           id="username"
-          name="username"
-          placeholder="Username"
+          label="Username: "
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          placeholder="Username"
           required
         />
-        <br />
-        <label htmlFor="email">Email: </label>
-        <input
-          type="email"
+        <FormField
           id="email"
-          name="email"
-          placeholder="Email"
+          label="Email: "
+          type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
           required
         />
-        <br />
-        <label htmlFor="password">Password: </label>
-        <input
-          type="password"
+        <FormField
           id="password"
-          name="password"
-          placeholder="Password"
+          label="Password: "
+          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
           required
         />
-        <br />
-        <label htmlFor="skillLevel">Skill Level: </label>
-        <select
+        <FormField
           id="skillLevel"
-          name="skillLevel"
+          label="Skill Level: "
           value={skillLevel}
           onChange={(e) => setSkillLevel(e.target.value)}
         >
@@ -124,8 +117,7 @@ function SignUp() {
           <option value="intermediate">Intermediate</option>
           <option value="advanced">Advanced</option>
           <option value="expert">Expert</option>
-        </select>
-        <br />
+        </FormField>
         {errorMessage && <p>{errorMessage}</p>}
         <br />
         {successMessage && (

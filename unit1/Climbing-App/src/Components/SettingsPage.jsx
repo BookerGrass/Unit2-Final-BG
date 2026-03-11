@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./NavBar";
 import Footer from "./Footer";
+import FormField from "./FormField";
 import "./Main.css";
 
 function SettingsPage() {
@@ -401,10 +402,9 @@ function SettingsPage() {
       <main className="flex-item">
         <h1 className="title">Settings</h1>
         <form onSubmit={handleSubmit}>
-          <label htmlFor="detailToChange">Choose detail to change: </label>
-          <select
+          <FormField
             id="detailToChange"
-            name="detailToChange"
+            label="Choose detail to change: "
             value={selectedDetail}
             onChange={(event) => {
               setSelectedDetail(event.target.value);
@@ -420,79 +420,67 @@ function SettingsPage() {
             <option value="buddy">Buddy</option>
             <option value="clearGoals">Clear Achievements</option>
             <option value="delete">Delete Account</option>
-          </select>
-          <br />
+          </FormField>
 
           {selectedDetail === "username" && (
             <>
-              <label htmlFor="newUsername">New Username: </label>
-              <input
-                type="text"
+              <FormField
                 id="newUsername"
-                name="newUsername"
+                label="New Username: "
                 value={newUsername}
                 onChange={(event) => setNewUsername(event.target.value)}
                 required
               />
-              <br />
             </>
           )}
 
           {selectedDetail === "email" && (
             <>
-              <label htmlFor="newEmail">New Email: </label>
-              <input
-                type="email"
+              <FormField
                 id="newEmail"
-                name="newEmail"
+                label="New Email: "
+                type="email"
                 value={newEmail}
                 onChange={(event) => setNewEmail(event.target.value)}
                 required
               />
-              <br />
             </>
           )}
 
           {selectedDetail === "password" && (
             <>
-              <label htmlFor="newPassword">New Password: </label>
-              <input
-                type="password"
+              <FormField
                 id="newPassword"
-                name="newPassword"
+                label="New Password: "
+                type="password"
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
                 required
               />
-              <br />
 
-              <label htmlFor="confirmPassword">Confirm New Password: </label>
-              <input
-                type="password"
+              <FormField
                 id="confirmPassword"
-                name="confirmPassword"
+                label="Confirm New Password: "
+                type="password"
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
                 required
               />
-              <br />
             </>
           )}
 
           {selectedDetail === "buddy" && (
             <>
-              <label htmlFor="selectedBuddy">Choose Buddy: </label>
-              <select
+              <FormField
                 id="selectedBuddy"
-                name="selectedBuddy"
+                label="Choose Buddy: "
                 value={selectedBuddy}
                 onChange={(event) => setSelectedBuddy(event.target.value)}
               >
                 <option value="cat">Cat</option>
                 <option value="dog">Dog</option>
                 <option value="lizard">Lizard</option>
-              </select>
-              <br />
+              </FormField>
               <img
                 src={buddyOptions[selectedBuddy]}
                 alt={selectedBuddy}
@@ -506,34 +494,28 @@ function SettingsPage() {
           {selectedDetail === "delete" && (
             <>
               <p>Type "delete" to permanently remove your account.</p>
-              <label htmlFor="deleteConfirmation">Confirm delete: </label>
-              <input
-                type="text"
+              <FormField
                 id="deleteConfirmation"
-                name="deleteConfirmation"
+                label="Confirm delete: "
                 value={deleteConfirmation}
                 onChange={(event) => setDeleteConfirmation(event.target.value)}
                 required
               />
-              <br />
             </>
           )}
 
           {selectedDetail === "clearGoals" && (
             <>
               <p>Type "clear" to delete all achieved goals.</p>
-              <label htmlFor="clearGoalsConfirmation">Confirm clear: </label>
-              <input
-                type="text"
+              <FormField
                 id="clearGoalsConfirmation"
-                name="clearGoalsConfirmation"
+                label="Confirm clear: "
                 value={clearAchievementsConfirmation}
                 onChange={(event) =>
                   setClearAchievementsConfirmation(event.target.value)
                 }
                 required
               />
-              <br />
             </>
           )}
 
