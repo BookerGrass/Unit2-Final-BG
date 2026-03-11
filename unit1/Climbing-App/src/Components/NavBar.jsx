@@ -1,10 +1,17 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./NavBar.css";
 
 function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const isLoggedIn = Boolean(localStorage.getItem("loggedInUsername"));
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("loggedInUsername");
+    setIsOpen(false);
+    navigate("/login");
+  };
 
   return (
     <nav className="navbar">
@@ -47,9 +54,9 @@ function NavBar() {
             )}
             {isLoggedIn && (
               <li>
-                <Link to="/login" onClick={() => setIsOpen(false)}>
+                <button type="button" onClick={handleLogout}>
                   Log Out
-                </Link>
+                </button>
               </li>
             )}
             <li>
