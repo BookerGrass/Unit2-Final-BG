@@ -611,6 +611,7 @@ function HomePage() {
           Reset
         </button>
       </div>
+      <Footer />
     </div>
   );
 }
