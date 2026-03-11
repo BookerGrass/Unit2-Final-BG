@@ -4,6 +4,7 @@ import "./NavBar.css";
 
 function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
+  const isLoggedIn = Boolean(localStorage.getItem("loggedInUsername"));
 
   return (
     <nav className="navbar">
@@ -30,16 +31,27 @@ function NavBar() {
                 Home
               </Link>
             </li>
-            <li>
-              <Link to="/signup" onClick={() => setIsOpen(false)}>
-                Sign Up
-              </Link>
-            </li>
-            <li>
-              <Link to="/login" onClick={() => setIsOpen(false)}>
-                Log In
-              </Link>
-            </li>
+            {!isLoggedIn && (
+              <>
+                <li>
+                  <Link to="/signup" onClick={() => setIsOpen(false)}>
+                    Sign Up
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/login" onClick={() => setIsOpen(false)}>
+                    Log In
+                  </Link>
+                </li>
+              </>
+            )}
+            {isLoggedIn && (
+              <li>
+                <Link to="/login" onClick={() => setIsOpen(false)}>
+                  Log Out
+                </Link>
+              </li>
+            )}
             <li>
               <Link to="/create" onClick={() => setIsOpen(false)}>
                 Create Buddy
