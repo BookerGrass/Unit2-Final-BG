@@ -331,6 +331,37 @@ function HomePage() {
     }
   };
 
+  const handleDeleteInProgressTask = async (goalId) => {
+    if (!userId) return;
+
+    const didConfirmDelete = window.confirm(
+      "Are you sure you want to delete this in-progress task?",
+    );
+
+    if (!didConfirmDelete) {
+      return;
+    }
+
+    setTaskErrorMessage("");
+
+    try {
+      const response = await fetch(`${baseUrl}/api/goals/${goalId}`, {
+        method: "DELETE",
+      });
+
+      if (!(response.ok || response.status === 204)) {
+        setTaskErrorMessage("Could not delete task.");
+        return;
+      }
+
+      setInProgressTasks((prev) => prev.filter((goal) => goal.id !== goalId));
+      await fetchGoals();
+    } catch (error) {
+      console.error("Error deleting goal:", error);
+      setTaskErrorMessage("Could not delete task.");
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("loggedInUsername");
     navigate("/login");
@@ -388,7 +419,8 @@ function HomePage() {
               </p>
             </p>
             <p>
-              - Achievements: completed goals appear here and can be deleted.
+              - Achievements: completed goals appear here and can be deleted
+              through account settings.
             </p>
             <p>- Buddy: shows your selected climbing buddy image.</p>
             <button type="button" onClick={() => setShowHelpPopup(false)}>
@@ -458,6 +490,12 @@ function HomePage() {
                       disabled={goal.currentCount >= goal.maxCount}
                     >
                       +1
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteInProgressTask(goal.id)}
+                    >
+                      Delete
                     </button>
                   </li>
                 ))
