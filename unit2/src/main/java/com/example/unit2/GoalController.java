@@ -14,26 +14,33 @@ public class GoalController {
     @Autowired
     private GoalRepository goalRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Goal>> getGoalsByUserId(@PathVariable Long userId) {
-        List<Goal> goals = goalRepository.findByUserId(userId);
+        List<Goal> goals = goalRepository.findByUser_Id(userId);
         return ResponseEntity.ok(goals);
     }
 
     @GetMapping("/user/{userId}/achieved")
     public ResponseEntity<List<Goal>> getAchievedGoals(@PathVariable Long userId) {
-        List<Goal> goals = goalRepository.findByUserIdAndAchieved(userId, true);
+        List<Goal> goals = goalRepository.findByUser_IdAndAchieved(userId, true);
         return ResponseEntity.ok(goals);
     }
 
     @GetMapping("/user/{userId}/in-progress")
     public ResponseEntity<List<Goal>> getInProgressGoals(@PathVariable Long userId) {
-        List<Goal> goals = goalRepository.findByUserIdAndAchieved(userId, false);
+        List<Goal> goals = goalRepository.findByUser_IdAndAchieved(userId, false);
         return ResponseEntity.ok(goals);
     }
 
     @PostMapping
     public ResponseEntity<Goal> createGoal(@RequestBody Goal goal) {
+        Long userId = goal.getUserId();
+        if (userId == null || !userRepository.existsById(userId)) {
+            return ResponseEntity.badRequest().build();
+        }
         goal.setCurrentCount(0);
         goal.setAchieved(false);
         Goal savedGoal = goalRepository.save(goal);

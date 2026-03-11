@@ -9,8 +9,9 @@ public class Goal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false)
     private String taskName;
@@ -28,7 +29,7 @@ public class Goal {
     public Goal() {}
 
     public Goal(Long userId, String taskName, int currentCount, int maxCount, boolean achieved) {
-        this.userId = userId;
+        this.user = userId == null ? null : createUserRef(userId);
         this.taskName = taskName;
         this.currentCount = currentCount;
         this.maxCount = maxCount;
@@ -43,12 +44,21 @@ public class Goal {
         this.id = id;
     }
 
+    @Transient
     public Long getUserId() {
-        return userId;
+        return user != null ? user.getId() : null;
     }
 
     public void setUserId(Long userId) {
-        this.userId = userId;
+        this.user = userId == null ? null : createUserRef(userId);
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getTaskName() {
@@ -81,5 +91,11 @@ public class Goal {
 
     public void setAchieved(boolean achieved) {
         this.achieved = achieved;
+    }
+
+    private User createUserRef(Long userId) {
+        User userRef = new User();
+        userRef.setId(userId);
+        return userRef;
     }
 }
