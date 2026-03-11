@@ -16,7 +16,7 @@ function NavBar() {
   return (
     <nav className="navbar">
       <div className="navbar-left">
-        <Link to="/" className="logo">
+        <Link to={isLoggedIn ? "/home" : "/"} className="logo">
           ClimbBuddy
         </Link>
       </div>
@@ -54,9 +54,9 @@ function NavBar() {
             )}
             {isLoggedIn && (
               <li>
-                <button type="button" onClick={handleLogout}>
+                <Link to="/login" onClick={handleLogout}>
                   Log Out
-                </button>
+                </Link>
               </li>
             )}
             <li>
