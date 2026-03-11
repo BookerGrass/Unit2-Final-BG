@@ -139,6 +139,41 @@ function HomePage() {
       origin: { y: 0.6 },
     });
   };
+  const START_TIME = 5 * 60;
+
+  const [timeLeft, setTimeLeft] = useState(START_TIME);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+
+  useEffect(() => {
+    if (!isTimerRunning) return;
+    if (timeLeft <= 0) {
+      setIsTimerRunning(false);
+      return;
+    }
+
+    const timerId = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [isTimerRunning, timeLeft]);
+
+  const startTimer = () => {
+    setTimeLeft(START_TIME);
+    setIsTimerRunning(true);
+  };
+
+  const stopTimer = () => {
+    setIsTimerRunning(false);
+  };
+
+  const resetTimer = () => {
+    setIsTimerRunning(false);
+    setTimeLeft(START_TIME);
+  };
+
+  const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+  const seconds = String(timeLeft % 60).padStart(2, "0");
 
   const fetchGoals = async (userIdParam) => {
     const id = userIdParam || userId;
@@ -560,7 +595,22 @@ function HomePage() {
           <p>No buddy selected yet.</p>
         )}
       </div>
-      <Footer />
+      <div className="flex-item">
+        <h2>Rest Timer</h2>
+        <p>
+          {minutes}:{seconds}
+        </p>
+
+        <button type="button" onClick={startTimer} disabled={isTimerRunning}>
+          Start 5:00
+        </button>
+        <button type="button" onClick={stopTimer} disabled={!isTimerRunning}>
+          Pause
+        </button>
+        <button type="button" onClick={resetTimer}>
+          Reset
+        </button>
+      </div>
     </div>
   );
 }
