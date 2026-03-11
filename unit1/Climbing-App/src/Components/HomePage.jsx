@@ -458,6 +458,10 @@ function HomePage() {
               through account settings.
             </p>
             <p>- Buddy: shows your selected climbing buddy image.</p>
+            <p>
+              - Rest Timer: allows you to track your rest periods between
+              climbs.
+            </p>
             <button type="button" onClick={() => setShowHelpPopup(false)}>
               Close
             </button>
