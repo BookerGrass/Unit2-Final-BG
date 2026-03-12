@@ -99,6 +99,7 @@ function HomePage() {
   const [showSecretMessage, setShowSecretMessage] = useState(false);
   const [showHelpPopup, setShowHelpPopup] = useState(false);
   const [showFireworks, setShowFireworks] = useState(false);
+  const [goalPendingDelete, setGoalPendingDelete] = useState(null);
   const previousAchievedCountRef = useRef(0);
 
   const maxCount = 5;
@@ -366,30 +367,35 @@ function HomePage() {
     }
   };
 
-  const handleDeleteInProgressTask = async (goalId) => {
-    if (!userId) return;
-
-    const didConfirmDelete = window.confirm(
-      "Are you sure you want to delete this in-progress task?",
-    );
-
-    if (!didConfirmDelete) {
-      return;
-    }
-
+  const openDeletePopup = (goal) => {
     setTaskErrorMessage("");
+    setGoalPendingDelete(goal);
+  };
+
+  const closeDeletePopup = () => {
+    setGoalPendingDelete(null);
+  };
+
+  const confirmDeleteInProgressTask = async () => {
+    if (!userId || !goalPendingDelete) return;
 
     try {
-      const response = await fetch(`${baseUrl}/api/goals/${goalId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${baseUrl}/api/goals/${goalPendingDelete.id}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       if (!(response.ok || response.status === 204)) {
         setTaskErrorMessage("Could not delete task.");
         return;
       }
 
-      setInProgressTasks((prev) => prev.filter((goal) => goal.id !== goalId));
+      setInProgressTasks((prev) =>
+        prev.filter((goal) => goal.id !== goalPendingDelete.id),
+      );
+      setGoalPendingDelete(null);
       await fetchGoals();
     } catch (error) {
       console.error("Error deleting goal:", error);
@@ -420,7 +426,6 @@ function HomePage() {
       >
         ?
       </button>
-
       {showHelpPopup && (
         <div
           style={{
@@ -443,6 +448,7 @@ function HomePage() {
               borderRadius: "10px",
               maxWidth: "420px",
               width: "90%",
+              textAlign: "center",
             }}
           >
             <h3>Home Page Help</h3>
@@ -464,6 +470,45 @@ function HomePage() {
             </p>
             <button type="button" onClick={() => setShowHelpPopup(false)}>
               Close
+            </button>
+          </div>
+        </div>
+      )}
+      {goalPendingDelete && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10001,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "10px",
+              maxWidth: "420px",
+              width: "90%",
+              textAlign: "center",
+            }}
+          >
+            <h3>Delete Task?</h3>
+            <p>
+              Are you sure you want to delete{" "}
+              <strong>{goalPendingDelete.taskName}</strong>?
+            </p>
+            <button type="button" onClick={confirmDeleteInProgressTask}>
+              Yes, Delete
+            </button>
+            <button type="button" onClick={closeDeletePopup}>
+              Cancel
             </button>
           </div>
         </div>
@@ -530,10 +575,7 @@ function HomePage() {
                     >
                       +1
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteInProgressTask(goal.id)}
-                    >
+                    <button type="button" onClick={() => openDeletePopup(goal)}>
                       Delete
                     </button>
                   </li>
