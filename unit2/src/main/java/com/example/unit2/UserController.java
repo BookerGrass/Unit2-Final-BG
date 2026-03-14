@@ -7,29 +7,21 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
+// Sets up RESTful API endpoints for managing users, including creating, updating, retrieving, and deleting user information based on user ID or username. It also includes an endpoint to update a user's buddy information. The controller uses the UserRepository to interact with the database and handle user-related operations.
 @RestController
 @RequestMapping("/api/users")
+@CrossOrigin(origins = "*")
 public class UserController {
 
     @Autowired
     private UserRepository userRepository;
 
-    /**
-     * GET /api/users - Get all users
-     * @return a list of all users
-     */
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userRepository.findAll();
         return ResponseEntity.ok(users);
     }
 
-    /**
-     * GET /api/users/{id} - Get a user by ID
-     * @param id the user ID
-     * @return the user if found, or 404 Not Found
-     */
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         Optional<User> user = userRepository.findById(id);
@@ -37,11 +29,6 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * GET /api/users/username/{username} - Get a user by username
-     * @param username the username to search for
-     * @return the user if found, or 404 Not Found
-     */
     @GetMapping("/username/{username}")
     public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
         Optional<User> user = userRepository.findByUsername(username);
@@ -49,11 +36,6 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * POST /api/users - Create a new user
-     * @param user the user object to create
-     * @return the created user with 201 Created status
-     */
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
         // Check if username already exists
@@ -64,12 +46,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
 
-    /**
-     * PUT /api/users/{id} - Update an existing user
-     * @param id the user ID
-     * @param userDetails the updated user details
-     * @return the updated user, or 404 Not Found
-     */
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
         Optional<User> userOptional = userRepository.findById(id);
@@ -88,11 +64,54 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    /**
-     * DELETE /api/users/{id} - Delete a user
-     * @param id the user ID
-     * @return 204 No Content if deleted, or 404 Not Found
-     */
+    @PutMapping("/username/{username}")
+    public ResponseEntity<User> updateUserByUsername(@PathVariable String username, @RequestBody User userDetails) {
+        Optional<User> userOptional = userRepository.findByUsername(username);
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userOptional.get();
+
+        if (userDetails.getUsername() != null && !userDetails.getUsername().equals(username)) {
+            if (userRepository.existsByUsername(userDetails.getUsername())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
+            user.setUsername(userDetails.getUsername());
+        }
+
+        if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
+            user.setPassword(userDetails.getPassword());
+        }
+
+        if (userDetails.getEmail() != null && !userDetails.getEmail().isEmpty()) {
+            user.setEmail(userDetails.getEmail());
+        }
+
+        if (userDetails.getSkillLevel() != null) {
+            user.setSkillLevel(userDetails.getSkillLevel());
+        }
+
+        User updatedUser = userRepository.save(user);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @PutMapping("/username/{username}/buddy")
+    public ResponseEntity<User> updateBuddy(@PathVariable String username, @RequestBody BuddyRequest buddyRequest) {
+        Optional<User> userOptional = userRepository.findByUsername(username);
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userOptional.get();
+        user.setBuddy(buddyRequest.getBuddy());
+
+        User updatedUser = userRepository.save(user);
+        return ResponseEntity.ok(updatedUser);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         if (!userRepository.existsById(id)) {
@@ -100,19 +119,6 @@ public class UserController {
         }
         userRepository.deleteById(id);
         return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * GET /api/users/skill/{skillLevel} - Get all users with a specific skill level
-     * @param skillLevel the skill level to filter by
-     * @return a list of users with the specified skill level
-     */
-    @GetMapping("/skill/{skillLevel}")
-    public ResponseEntity<List<User>> getUsersBySkillLevel(@PathVariable SkillLevel skillLevel) {
-        List<User> users = userRepository.findAll().stream()
-                .filter(user -> user.getSkillLevel() == skillLevel)
-                .toList();
-        return ResponseEntity.ok(users);
     }
 }
 

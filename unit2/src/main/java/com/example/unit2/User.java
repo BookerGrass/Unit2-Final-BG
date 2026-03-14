@@ -1,7 +1,7 @@
 package com.example.unit2;
 
 import jakarta.persistence.*;
-
+// Sets up User entity class to represent users in the application, with fields for id, username, email, password, skill level, and buddy. Includes constructors, getters, setters, and a toString method for easy representation of user objects.
 @Entity
 @Table(name = "users")
 public class User {
@@ -22,7 +22,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     private SkillLevel skillLevel;
 
-    // Constructors
+    @Column
+    private String buddy;
+
+
     public User() {
     }
 
@@ -33,7 +36,7 @@ public class User {
         this.skillLevel = skillLevel;
     }
 
-    // Getters and Setters
+
     public Long getId() {
         return id;
     }
@@ -74,6 +77,14 @@ public class User {
         this.skillLevel = skillLevel;
     }
 
+    public String getBuddy() {
+        return buddy;
+    }
+
+    public void setBuddy(String buddy) {
+        this.buddy = buddy;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -82,6 +93,7 @@ public class User {
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
                 ", skillLevel=" + skillLevel +
+                ", buddy='" + buddy + '\'' +
                 '}';
     }
 }
