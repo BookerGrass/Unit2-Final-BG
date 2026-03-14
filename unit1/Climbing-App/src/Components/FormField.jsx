@@ -1,5 +1,7 @@
 import React from "react";
 
+// set up form field component that can be used for both input and select fields, also added support for required fields and placeholder text
+
 function FormField({
   id,
   label,

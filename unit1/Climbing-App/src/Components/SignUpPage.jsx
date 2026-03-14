@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import "./Main.css";
 
 function SignUp() {
+  // set up state for username, email, password, skill level, error message, success message, and isSubmitting, also get the navigate function from react router to navigate to the login page on successful signup
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -37,6 +38,7 @@ function SignUp() {
     setSuccessMessage("");
     setIsSubmitting(true);
 
+    // set up base URL for the API, using an environment variable if available, otherwise defaulting to localhost, then make a POST request to the server to create a new user with the provided username, email, password, and skill level, and handle error states for if the username already exists or if there is an issue with the server
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080"}/api/users`,
@@ -77,6 +79,7 @@ function SignUp() {
   };
 
   return (
+    //renders the signup page with a form to create a new account, including fields for username, email, password, and skill level, as well as error and success messages based on the form submission, and a navbar and footer
     <div>
       <Navbar />
       <form className="flex-item" onSubmit={handleSubmit}>

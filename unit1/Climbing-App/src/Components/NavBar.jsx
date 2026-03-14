@@ -2,11 +2,14 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./NavBar.css";
 
+// sets up nav bar component
 function NavBar() {
+  // sets up state for whether the mobile menu is open, checks if the user is logged in by looking for a logged in username in local storage, and gets the navigate function from react router to navigate to the login page on logout
   const [isOpen, setIsOpen] = useState(false);
   const isLoggedIn = Boolean(localStorage.getItem("loggedInUsername"));
   const navigate = useNavigate();
 
+  // sets up handleLogout function to clear the logged in username from local storage and navigate to the login page when the user clicks the logout button
   const handleLogout = () => {
     localStorage.removeItem("loggedInUsername");
     setIsOpen(false);
@@ -14,6 +17,7 @@ function NavBar() {
   };
 
   return (
+    //renders the nav bar with a logo that links to the home page, navigation links for home, signup, login, create buddy, about us, and settings, and conditionally renders the signup and login links if the user is not logged in, and a logout link if the user is logged in, also includes a hamburger menu toggle for mobile screens that shows or hides the navigation links when clicked
     <nav className="navbar">
       <div className="navbar-left">
         <Link to={isLoggedIn ? "/home" : "/"} className="logo">

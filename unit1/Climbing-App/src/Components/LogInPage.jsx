@@ -5,7 +5,9 @@ import Footer from "./Footer";
 import FormField from "./FormField";
 import "./Main.css";
 
+// set up login page
 function LoginPage() {
+  // set up state for username, password, error message, success message, and isSubmitting, also get the navigate function from react router to navigate to the home page on successful login
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -13,10 +15,12 @@ function LoginPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // set up form validation to ensure that the username and password fields are not empty before allowing the user to submit the form, also added a check to prevent multiple submissions while the form is already being submitted
   const usernameValid = username.trim() !== "";
   const passwordValid = password.trim() !== "";
   const isFormValid = usernameValid && passwordValid;
 
+  // set up handleSubmit function to handle the form submission
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -26,6 +30,7 @@ function LoginPage() {
     setSuccessMessage("");
     setIsSubmitting(true);
 
+    // set up base URL for the API, using an environment variable if available, otherwise defaulting to localhost, then make a GET request to the server to fetch the user with the provided username, and handle error states for if the user is not found or if there is an issue with the server
     const baseUrl =
       import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
@@ -66,6 +71,7 @@ function LoginPage() {
   };
 
   return (
+    //renders the login page with a form for the username and password, and displays error or success messages based on the login attempt, also includes buttons to navigate to the home page on successful login and includes a navbar and footer
     <div>
       <Navbar />
       <form className="flex-item" onSubmit={handleSubmit}>

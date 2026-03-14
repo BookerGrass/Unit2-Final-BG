@@ -5,7 +5,9 @@ import Footer from "./Footer";
 import FormField from "./FormField";
 import "./Main.css";
 
+// sets up settings page
 function SettingsPage() {
+  // sets up state for the current username, selected detail to change, new username, new email, selected buddy, new password, confirm password, delete confirmation, clear achievements confirmation, error message, success message, and isSubmitting, also gets the logged in username from local storage and the navigate function from react router to navigate to the login page if the user is not logged in or after account deletion
   const navigate = useNavigate();
   const storedUsername = localStorage.getItem("loggedInUsername");
   const [currentUsername, setCurrentUsername] = useState(storedUsername ?? "");
@@ -22,6 +24,7 @@ function SettingsPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // set up buddy options for the buddy selection dropdown menu
   const buddyOptions = {
     cat: "https://www.catbehaviourist.com/wp-content/uploads/2015/11/cat-in-tree-1.jpg",
     dog: "https://gripped.com/wp-content/uploads/2018/03/Biscuit-Dog.jpg",
@@ -29,6 +32,7 @@ function SettingsPage() {
       "https://images.pexels.com/photos/17020788/pexels-photo-17020788/free-photo-of-a-lizard-climbing-on-the-rock.jpeg",
   };
 
+  // if the user is not logged in, show a message and buttons to go to login or signup page
   if (!storedUsername) {
     return (
       <div>
@@ -56,6 +60,7 @@ function SettingsPage() {
     );
   }
 
+  // set up updateUser function to update the user's username, email, or password based on the selected detail, also added error handling for if the user is not found or if there is an issue with the server
   const updateUser = async (baseUrl, usernameToUpdate, body) => {
     const endpoints = [
       `${baseUrl}/api/users/username/${encodeURIComponent(usernameToUpdate)}`,
@@ -97,6 +102,7 @@ function SettingsPage() {
   };
 
   const updateBuddy = async (baseUrl, usernameToUpdate, buddy) => {
+    // set up updateBuddy function to update the user's buddy based on the selected buddy, also added error handling for if the user is not found or if there is an issue with the server
     try {
       const response = await fetch(
         `${baseUrl}/api/users/username/${encodeURIComponent(usernameToUpdate)}/buddy`,
@@ -130,6 +136,7 @@ function SettingsPage() {
   };
 
   const deleteUserAccount = async (baseUrl, usernameToDelete) => {
+    // set up deleteUserAccount function to delete the user's account based on the username, also added error handling for if the user is not found or if there is an issue with the server
     try {
       const userResponse = await fetch(
         `${baseUrl}/api/users/username/${encodeURIComponent(usernameToDelete)}`,
@@ -180,6 +187,7 @@ function SettingsPage() {
   };
 
   const clearUserAchievements = async (baseUrl, usernameToClear) => {
+    // set up clearUserAchievements function to clear the user's achievements based on the username, also added error handling for if the user is not found or if there is an issue with the server
     try {
       const userResponse = await fetch(
         `${baseUrl}/api/users/username/${encodeURIComponent(usernameToClear)}`,
@@ -258,6 +266,7 @@ function SettingsPage() {
     }
   };
 
+  // set up handleSubmit function to handle the form submission for updating user details, also added validation for the input fields and error handling for if there is an issue with the server or if the user is not found
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -286,6 +295,7 @@ function SettingsPage() {
       body.username = trimmedUsername;
     }
 
+    // added validation for email field to ensure it is not blank and is in a valid email format before allowing the user to submit the form, also added error handling for if the new email is the same as the current email
     if (selectedDetail === "email") {
       const trimmedEmail = newEmail.trim();
 
@@ -302,6 +312,7 @@ function SettingsPage() {
       body.email = trimmedEmail;
     }
 
+    // added validation for password fields to ensure the new password is not blank, is at least 6 characters long, and matches the confirm password field before allowing the user to submit the form, also added error handling for if the new password is the same as the current password
     if (selectedDetail === "password") {
       if (newPassword.trim() === "") {
         setErrorMessage("Password cannot be blank.");
@@ -321,6 +332,7 @@ function SettingsPage() {
       body.password = newPassword;
     }
 
+    //added validation for delete account and clear achievements options to ensure the user types the correct confirmation text before allowing them to submit the form, also added error handling for if the confirmation text is incorrect
     if (selectedDetail === "delete") {
       if (deleteConfirmation.trim() !== "delete") {
         setErrorMessage('Type "delete" to confirm account deletion.');
@@ -328,6 +340,7 @@ function SettingsPage() {
       }
     }
 
+    //added validation for clear achievements option to ensure the user types the correct confirmation text before allowing them to submit the form, also added error handling for if the confirmation text is incorrect
     if (selectedDetail === "clearGoals") {
       if (clearAchievementsConfirmation.trim() !== "clear") {
         setErrorMessage('Type "clear" to confirm clearing Achievements.');
@@ -335,6 +348,7 @@ function SettingsPage() {
       }
     }
 
+    //set up base URL for the API
     const baseUrl =
       import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
@@ -342,6 +356,7 @@ function SettingsPage() {
 
     let result;
 
+    // determine which update function to call based on the selected detail, and call the appropriate function to update the user's details, also added error handling for if there is an issue with the server or if the user is not found
     if (selectedDetail === "buddy") {
       result = await updateBuddy(baseUrl, currentUsername, selectedBuddy);
     } else if (selectedDetail === "delete") {
@@ -358,6 +373,7 @@ function SettingsPage() {
       return;
     }
 
+    // if the update was successful, update the current username state and local storage if the username was changed
     if (selectedDetail === "username") {
       const trimmedUsername = newUsername.trim();
       localStorage.setItem("loggedInUsername", trimmedUsername);
@@ -365,21 +381,25 @@ function SettingsPage() {
       setSuccessMessage("Username updated successfully.");
     }
 
+    // if the updated email is successful, show a success message
     if (selectedDetail === "email") {
       setNewEmail("");
       setSuccessMessage("Email updated successfully.");
     }
 
+    // if the updated password is successful, clear the password fields and show a success message
     if (selectedDetail === "password") {
       setNewPassword("");
       setConfirmPassword("");
       setSuccessMessage("Password updated successfully.");
     }
 
+    // if the updated buddy is successful, show a success message
     if (selectedDetail === "buddy") {
       setSuccessMessage("Buddy updated successfully.");
     }
 
+    //if the account deletion is successful, clear the logged in username from local storage, show a success message, and navigate to the login page
     if (selectedDetail === "delete") {
       localStorage.removeItem("loggedInUsername");
       setSuccessMessage("Account deleted successfully.");
@@ -388,6 +408,7 @@ function SettingsPage() {
       return;
     }
 
+    // if the achievements were cleared successfully, show a success message
     if (selectedDetail === "clearGoals") {
       setClearAchievementsConfirmation("");
       setSuccessMessage("Achievements cleared successfully.");
@@ -397,6 +418,7 @@ function SettingsPage() {
   };
 
   return (
+    // renders the settings page with a form to update the user's username, email, password, or buddy, as well as options to clear achievements or delete the account, also includes error and success messages based on the form submission, and a navbar and footer
     <div>
       <Navbar />
       <main className="flex-item">

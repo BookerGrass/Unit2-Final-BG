@@ -4,6 +4,7 @@ import Footer from "./Footer";
 import "./LandingScreen.css";
 import { Link } from "react-router-dom";
 
+// set up landing screen with a home image, centered text, and a get started button that links to the signup page, also added a section for testimonials from users, and a navbar and footer to the page
 function LandingScreen() {
   return (
     <div>

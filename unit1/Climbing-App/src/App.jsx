@@ -10,6 +10,7 @@ import SettingsPage from "./Components/SettingsPage";
 import { HashRouter, Routes, Route } from "react-router-dom";
 
 function App() {
+  // set up the main app component with routes for the landing screen, home page, create buddy page, signup page, about page, login page, and settings page, using react router for navigation
   return (
     <HashRouter>
       <Routes>

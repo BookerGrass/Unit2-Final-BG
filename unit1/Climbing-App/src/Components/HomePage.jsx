@@ -6,10 +6,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 import { Fireworks } from "@fireworks-js/react";
 
+//sets up random quote generator
+
 function getRandomStringFromArray(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// gives the URL for the buddy image
 const buddyImageOptions = {
   cat: "https://www.catbehaviourist.com/wp-content/uploads/2015/11/cat-in-tree-1.jpg",
   dog: "https://gripped.com/wp-content/uploads/2018/03/Biscuit-Dog.jpg",
@@ -17,6 +20,7 @@ const buddyImageOptions = {
     "https://images.pexels.com/photos/17020788/pexels-photo-17020788/free-photo-of-a-lizard-climbing-on-the-rock.jpeg",
 };
 
+// resolves the buddy image URL based on the stored buddy value, which can be a predefined option or a custom URL
 function resolveBuddyImage(buddyValue) {
   if (!buddyValue) {
     return "";
@@ -34,6 +38,7 @@ function resolveBuddyImage(buddyValue) {
 }
 
 function HomePage() {
+  // sets up state for the buddy image, user ID, loading status, quotes, tasks, error messages, and various UI states, also gets the logged in username from local storage and sets up navigate and location functions
   const loggedInUsername = localStorage.getItem("loggedInUsername");
   const navigate = useNavigate();
   const location = useLocation();
@@ -43,6 +48,7 @@ function HomePage() {
   const [userId, setUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // array for random quotes
   const quotes = [
     "Go You",
     "Have a low gravity day",
@@ -87,6 +93,7 @@ function HomePage() {
     "You got this",
   ];
 
+  // sets up state for the current quote, in progress tasks, new task input, achieved tasks, achieved count from database, error messages related to tasks, visibility of secret message and help popup, fireworks display, and goal pending deletion, also uses a ref to track the previous achieved count for triggering fireworks
   const [currentString, setCurrentString] = useState(() =>
     getRandomStringFromArray(quotes),
   );
@@ -106,6 +113,7 @@ function HomePage() {
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
   const earnedStars = Math.floor(dbAchievedCount / 5);
 
+  // if the user is not logged in, show a message and buttons to navigate to login or signup pages
   if (!loggedInUsername) {
     return (
       <div>
@@ -140,8 +148,9 @@ function HomePage() {
       origin: { y: 0.6 },
     });
   };
-  const START_TIME = 5 * 60;
 
+  // sets up a timer for the rest period between climbs, with functions to start, stop, and reset the timer, and calculates the minutes and seconds remaining for display
+  const START_TIME = 5 * 60;
   const [timeLeft, setTimeLeft] = useState(START_TIME);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
@@ -176,6 +185,7 @@ function HomePage() {
   const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const seconds = String(timeLeft % 60).padStart(2, "0");
 
+  // function to fetch the user's goals from the server, which updates the in progress and achieved tasks state, and handles loading and error states
   const fetchGoals = async (userIdParam) => {
     const id = userIdParam || userId;
     if (!id) return;
@@ -206,6 +216,7 @@ function HomePage() {
     }
   };
 
+  // useEffect to fetch the user information and goals when the component mounts, and sets up a cleanup function to prevent state updates if the component unmounts before the fetch completes
   useEffect(() => {
     let isCancelled = false;
 
@@ -214,6 +225,7 @@ function HomePage() {
         return;
       }
 
+      // fetch the user information based on the logged in username, and if successful, set the user ID and buddy image state, then fetch the user's goals, also added error handling for if the user is not found or if there is an issue with the server
       try {
         const response = await fetch(
           `${baseUrl}/api/users/username/${encodeURIComponent(loggedInUsername)}`,
@@ -248,6 +260,7 @@ function HomePage() {
       isCancelled = true;
     };
   }, [loggedInUsername]);
+  // useEffect to trigger a fireworks display when the user reaches 5 achieved tasks, and sets up a timeout to hide the fireworks after 5 seconds, also uses a ref to track the previous achieved count to ensure the fireworks only trigger when crossing the threshold from below
   useEffect(() => {
     const previousCount = previousAchievedCountRef.current;
     const currentCount = achievedTasks.length;
@@ -276,6 +289,7 @@ function HomePage() {
     const newCount = Math.min(currentCount + 1, nextMaxCount);
     const achieved = newCount >= nextMaxCount;
 
+    // make a PUT request to the server to update the goal progress, also added error handling for if there is an issue with the server
     try {
       const response = await fetch(`${baseUrl}/api/goals/${goal.id}`, {
         method: "PUT",
@@ -297,6 +311,7 @@ function HomePage() {
         return;
       }
 
+      // if the goal was achieved with this increment, trigger confetti and move the task from in progress to achieved state, otherwise just update the current count for the in progress task, then refetch the goals to ensure the UI is up to date with the server
       if (achieved) {
         triggerConfetti();
         setInProgressTasks((prev) =>
@@ -327,6 +342,7 @@ function HomePage() {
     }
   };
 
+  // sets up handleAddTask function to create a new task for the user, which makes a POST request to the server with the new task information, and handles error states for if the user is not logged in or if there is an issue with the server
   const handleAddTask = async (event) => {
     event.preventDefault();
 
@@ -367,6 +383,7 @@ function HomePage() {
     }
   };
 
+  // sets up delete task functionality, which includes opening a confirmation popup when the delete button is clicked for a task, and if the user confirms, makes a DELETE request to the server to remove the task, with error handling for if the user is not logged in or if there is an issue with the server
   const openDeletePopup = (goal) => {
     setTaskErrorMessage("");
     setGoalPendingDelete(goal);
@@ -403,12 +420,14 @@ function HomePage() {
     }
   };
 
+  // sets up handleLogout function to clear the logged in username from local storage and navigate to the login page when the user clicks the logout button
   const handleLogout = () => {
     localStorage.removeItem("loggedInUsername");
     navigate("/login");
   };
 
   return (
+    // renders the home page with a welcome message, the user's climbing buddy image, a list of in progress tasks with buttons to increment progress and delete tasks, a list of achieved tasks, a random positive quote, and a rest timer, also includes a help button that opens a popup with instructions for using the page, and conditionally renders fireworks when the user reaches 5 achieved tasks
     <div>
       <button
         type="button"

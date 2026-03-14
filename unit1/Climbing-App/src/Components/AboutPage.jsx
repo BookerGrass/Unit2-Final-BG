@@ -4,6 +4,8 @@ import Footer from "./Footer";
 import "./Main.css";
 import Picture from "./images/Picture.jpg";
 
+// set up about page with picture and text about the site and why we made it, also added a navbar and footer to the page
+
 function AboutPage() {
   return (
     <div>

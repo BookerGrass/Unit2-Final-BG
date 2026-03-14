@@ -6,6 +6,8 @@ import { Link } from "react-router-dom";
 import "./Main.css";
 import confetti from "canvas-confetti";
 
+// set up create buddy page where users can pick what their buddy looks like, also added confetti when they pick a new buddy, and a save button to save the buddy to the user's account, also added error handling for if the user is not logged in or if there is an issue with the server
+
 function CreateBuddy() {
   const triggerConfetti = () => {
     confetti({
@@ -15,11 +17,15 @@ function CreateBuddy() {
     });
   };
 
+  // set up state for selected image, isSubmitting, and errorMessage, also get the logged in username from local storage and set up navigate function
+
   const [selectedImage, setSelectedImage] = useState("cat");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const loggedInUsername = localStorage.getItem("loggedInUsername");
   const navigate = useNavigate();
+
+  // set up image options for the dropdown menu
 
   const imageOptions = {
     cat: "https://www.catbehaviourist.com/wp-content/uploads/2015/11/cat-in-tree-1.jpg",
@@ -27,6 +33,8 @@ function CreateBuddy() {
     lizard:
       "https://images.pexels.com/photos/17020788/pexels-photo-17020788/free-photo-of-a-lizard-climbing-on-the-rock.jpeg",
   };
+
+  // if the user is not logged in, show a message and buttons to go to login or signup page
 
   if (!loggedInUsername) {
     return (
@@ -60,6 +68,8 @@ function CreateBuddy() {
     setSelectedImage(e.target.value);
   };
 
+  // set up handleSave function to save the selected buddy to the user's account, also added error handling for if the user is not logged in or if there is an issue with the server
+
   const handleSave = async () => {
     const loggedInUsername = localStorage.getItem("loggedInUsername");
 
@@ -70,6 +80,8 @@ function CreateBuddy() {
 
     setIsSubmitting(true);
     setErrorMessage("");
+
+    // make a PUT request to the server to save the selected buddy to the user's account, also added error handling for if the user is not found or if there is an issue with the server
 
     try {
       const baseUrl =
@@ -102,6 +114,8 @@ function CreateBuddy() {
       setIsSubmitting(false);
     }
   };
+
+  // render the create buddy page with a dropdown menu to select the buddy, a save button to save the buddy to the user's account, and display the selected buddy image, also show any error messages if there are any
 
   return (
     <div>
