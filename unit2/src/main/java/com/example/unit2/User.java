@@ -1,7 +1,7 @@
 package com.example.unit2;
 
 import jakarta.persistence.*;
-
+// Sets up User entity class to represent users in the application, with fields for id, username, email, password, skill level, and buddy. Includes constructors, getters, setters, and a toString method for easy representation of user objects.
 @Entity
 @Table(name = "users")
 public class User {

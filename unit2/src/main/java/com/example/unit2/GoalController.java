@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+// Sets up RESTful API endpoints for managing goals, including creating, updating, retrieving, and deleting goals associated with users. It also includes endpoints to filter goals based on their achievement status.
 @RestController
 @RequestMapping("/api/goals")
 @CrossOrigin

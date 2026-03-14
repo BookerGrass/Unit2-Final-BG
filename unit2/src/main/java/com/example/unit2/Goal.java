@@ -1,7 +1,7 @@
 package com.example.unit2;
 
 import jakarta.persistence.*;
-
+// Defines the Goal entity with fields for id, user, taskName, currentCount, maxCount, and achieved. Includes constructors, getters, and setters for each field. The user field is a many-to-one relationship with the User entity, and the getUserId and setUserId methods allow for handling the user reference without exposing the entire User object.
 @Entity
 @Table(name = "goals")
 public class Goal {

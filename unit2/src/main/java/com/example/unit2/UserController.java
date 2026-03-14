@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
+// Sets up RESTful API endpoints for managing users, including creating, updating, retrieving, and deleting user information based on user ID or username. It also includes an endpoint to update a user's buddy information. The controller uses the UserRepository to interact with the database and handle user-related operations.
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
@@ -119,14 +119,6 @@ public class UserController {
         }
         userRepository.deleteById(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/skill/{skillLevel}")
-    public ResponseEntity<List<User>> getUsersBySkillLevel(@PathVariable SkillLevel skillLevel) {
-        List<User> users = userRepository.findAll().stream()
-                .filter(user -> user.getSkillLevel() == skillLevel)
-                .toList();
-        return ResponseEntity.ok(users);
     }
 }
 
